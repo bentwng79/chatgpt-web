@@ -12,11 +12,11 @@ export async function sendVerifyMail(toMail: string, verifyUrl: string) {
   let mailHtml = fs.readFileSync(mailTemplatePath, 'utf8')
   mailHtml = mailHtml.replace(/\${VERIFY_URL}/g, verifyUrl)
   mailHtml = mailHtml.replace(/\${SITE_TITLE}/g, config.siteConfig.siteTitle)
-  sendMail(toMail, `${config.siteConfig.siteTitle} 账号验证`, mailHtml, config.mailConfig)
+  sendMail(toMail, `${config.siteConfig.siteTitle} 賬號驗證`, mailHtml, config.mailConfig)
 }
 
 export async function sendTestMail(toMail: string, config: MailConfig) {
-  return sendMail(toMail, '测试邮件|Test mail', '这是一封测试邮件|This is test mail', config)
+  return sendMail(toMail, '測試郵件|Test mail', '這是一封測試郵件|This is test mail', config)
 }
 
 async function sendMail(toMail: string, subject: string, html: string, config: MailConfig) {
