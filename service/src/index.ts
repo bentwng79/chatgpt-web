@@ -245,11 +245,11 @@ router.post('/user-register', async (req, res) => {
     const { username, password } = req.body as { username: string; password: string }
     const config = await getCacheConfig()
     if (!config.siteConfig.registerEnabled) {
-      res.send({ status: 'Fail', message: '注册账号功能未启用 | Register account is disabled!', data: null })
+      res.send({ status: 'Fail', message: '註冊賬號功能未啟用 | Register account is disabled!', data: null })
       return
     }
     if (!isEmail(username)) {
-      res.send({ status: 'Fail', message: '请输入正确的邮箱 | Please enter a valid email address.', data: null })
+      res.send({ status: 'Fail', message: '請輸入正確的郵箱 | Please enter a valid email address.', data: null })
       return
     }
     if (isNotEmptyString(config.siteConfig.registerMails)) {
@@ -262,25 +262,25 @@ router.post('/user-register', async (req, res) => {
           break
       }
       if (!allowSuffix) {
-        res.send({ status: 'Fail', message: '该邮箱后缀不支持 | The email service provider is not allowed', data: null })
+        res.send({ status: 'Fail', message: '該郵箱后綴不支持 | The email service provider is not allowed', data: null })
         return
       }
     }
 
     const user = await getUser(username)
     if (user != null) {
-      res.send({ status: 'Fail', message: '邮箱已存在 | The email exists', data: null })
+      res.send({ status: 'Fail', message: '郵箱已存在 | The email exists', data: null })
       return
     }
     const newPassword = md5(password)
     await createUser(username, newPassword)
 
     if (username.toLowerCase() === process.env.ROOT_USER) {
-      res.send({ status: 'Success', message: '注册成功 | Register success', data: null })
+      res.send({ status: 'Success', message: '註冊成功 | Register success', data: null })
     }
     else {
       await sendVerifyMail(username, await getUserVerifyUrl(username))
-      res.send({ status: 'Success', message: '注册成功, 去邮箱中验证吧 | Registration is successful, you need to go to email verification', data: null })
+      res.send({ status: 'Success', message: '註冊成功, 去郵箱中驗証吧 | Registration is successful, you need to go to email verification', data: null })
     }
   }
   catch (error) {
@@ -294,7 +294,7 @@ router.post('/config', auth, async (req, res) => {
 
     const user = await getUserById(userId)
     if (user == null || user.status !== Status.Normal || user.email.toLowerCase() !== process.env.ROOT_USER)
-      throw new Error('无权限 | No permission.')
+      throw new Error('無權限 | No permission.')
 
     const response = await chatConfig()
     res.send(response)
@@ -320,15 +320,15 @@ router.post('/user-login', async (req, res) => {
   try {
     const { username, password } = req.body as { username: string; password: string }
     if (!username || !password || !isEmail(username))
-      throw new Error('用户名或密码为空 | Username or password is empty')
+      throw new Error('用戶名或密碼為空 | Username or password is empty')
 
     const user = await getUser(username)
     if (user == null
       || user.status !== Status.Normal
       || user.password !== md5(password)) {
       if (user != null && user.status === Status.PreVerify)
-        throw new Error('请去邮箱中验证 | Please verify in the mailbox')
-      throw new Error('用户不存在或密码错误 | User does not exist or incorrect password.')
+        throw new Error('請去郵箱中驗証 | Please verify in the mailbox')
+      throw new Error('用戶不存在或密碼錯誤 | User does not exist or incorrect password.')
     }
     const config = await getCacheConfig()
     const token = jwt.sign({
@@ -338,7 +338,7 @@ router.post('/user-login', async (req, res) => {
       userId: user._id,
       root: username.toLowerCase() === process.env.ROOT_USER,
     }, config.siteConfig.loginSalt.trim())
-    res.send({ status: 'Success', message: '登录成功 | Login successfully', data: { token } })
+    res.send({ status: 'Success', message: '登錄成功 | Login successfully', data: { token } })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -352,7 +352,7 @@ router.post('/user-info', auth, async (req, res) => {
 
     const user = await getUserById(userId)
     if (user == null || user.status !== Status.Normal)
-      throw new Error('用户不存在 | User does not exist.')
+      throw new Error('用戶不存在 | User does not exist.')
     await updateUserInfo(userId, { name, avatar, description } as UserInfo)
     res.send({ status: 'Success', message: '更新成功 | Update successfully' })
   }
@@ -368,7 +368,7 @@ router.post('/verify', async (req, res) => {
       throw new Error('Secret key is empty')
     const username = await checkUserVerify(token)
     await verifyUser(username)
-    res.send({ status: 'Success', message: '验证成功 | Verify successfully', data: null })
+    res.send({ status: 'Success', message: '驗証成功 | Verify successfully', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -438,7 +438,7 @@ router.post('/mail-test', rootAuth, async (req, res) => {
     const userId = req.headers.userId as string
     const user = await getUserById(userId)
     await sendTestMail(user.email, config)
-    res.send({ status: 'Success', message: '发送成功 | Successfully', data: null })
+    res.send({ status: 'Success', message: '發送成功 | Successfully', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
