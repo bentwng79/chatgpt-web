@@ -72,7 +72,7 @@ export default {
     chatHistory: 'Chat History',
     theme: 'Theme',
     language: 'Language',
-    api: 'API',
+    api: 'API Key',
     reverseProxy: 'Reverse Proxy',
     timeout: 'Timeout(ms)',
     socks: 'Socks',
