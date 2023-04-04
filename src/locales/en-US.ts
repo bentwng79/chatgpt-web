@@ -94,6 +94,7 @@ export default {
     loginEnabled: 'Login Enabled',
     loginSalt: 'Password MD5 Salt',
     loginSaltTip: 'Changes will invalidate all logged in',
+    monthlyUsage: 'Monthly Usage',
   },
   store: {
     siderButton: 'Prompt Store',
