@@ -72,7 +72,7 @@ export default {
     chatHistory: '紀錄',
     theme: '主題',
     language: '語言',
-    api: 'API',
+    api: 'API Key',
     reverseProxy: '反向代理',
     timeout: '逾時(ms)',
     socks: 'Socks',
