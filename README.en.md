@@ -7,7 +7,7 @@
 </br>
 
 ## Introduction
-> **This project is forked from [Chanzhaoyu/chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web). In addition to regularly merging this branch, some unique features have been added such as registration and login, setting API key on the front-end page.**
+> **This project is forked from [Kerwin1202/chatgpt-web](https://github.com/Kerwin1202/chatgpt-web). In addition to regularly merging this branch, some unique features have been added such as registration and login, setting API key on the front-end page.**
 </br>
 
 ## Screenshots
