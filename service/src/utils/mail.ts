@@ -12,7 +12,7 @@ export async function sendVerifyMail(toMail: string, verifyUrl: string) {
   let mailHtml = fs.readFileSync(mailTemplatePath, 'utf8')
   mailHtml = mailHtml.replace(/\${VERIFY_URL}/g, verifyUrl)
   mailHtml = mailHtml.replace(/\${SITE_TITLE}/g, config.siteConfig.siteTitle)
-  sendMail(toMail, `${config.siteConfig.siteTitle} 賬號驗證`, mailHtml, config.mailConfig)
+  sendMail(toMail, `${config.siteConfig.siteTitle} 賬戶驗證`, mailHtml, config.mailConfig)
 }
 
 export async function sendVerifyMailAdmin(toMail: string, verifyName: string, verifyUrl: string) {
@@ -24,7 +24,7 @@ export async function sendVerifyMailAdmin(toMail: string, verifyName: string, ve
   mailHtml = mailHtml.replace(/\${TO_MAIL}/g, verifyName)
   mailHtml = mailHtml.replace(/\${VERIFY_URL}/g, verifyUrl)
   mailHtml = mailHtml.replace(/\${SITE_TITLE}/g, config.siteConfig.siteTitle)
-  sendMail(toMail, `${config.siteConfig.siteTitle} 账号申请`, mailHtml, config.mailConfig)
+  sendMail(toMail, `${config.siteConfig.siteTitle} 賬戶申請`, mailHtml, config.mailConfig)
 }
 
 export async function sendNoticeMail(toMail: string) {
@@ -35,11 +35,11 @@ export async function sendNoticeMail(toMail: string) {
   let mailHtml = fs.readFileSync(mailTemplatePath, 'utf8')
   mailHtml = mailHtml.replace(/\${SITE_DOMAIN}/g, config.siteConfig.siteDomain)
   mailHtml = mailHtml.replace(/\${SITE_TITLE}/g, config.siteConfig.siteTitle)
-  sendMail(toMail, `${config.siteConfig.siteTitle} 账号开通`, mailHtml, config.mailConfig)
+  sendMail(toMail, `${config.siteConfig.siteTitle} 賬戶開通`, mailHtml, config.mailConfig)
 }
 
 export async function sendTestMail(toMail: string, config: MailConfig) {
-  return sendMail(toMail, '測試郵件|Test mail', '這是一封測試郵件|This is test mail', config)
+  return sendMail(toMail, '測試郵件 | Test mail', '這是一封測試郵件 | This is test mail', config)
 }
 
 async function sendMail(toMail: string, subject: string, html: string, config: MailConfig) {
