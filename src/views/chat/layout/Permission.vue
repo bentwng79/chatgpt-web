@@ -54,7 +54,7 @@ async function handleVerify(verifytoken: string) {
   try {
     loading.value = true
     await fetchVerify(secretKey)
-    ms.success('验证成功, 请等待管理员开通 | Verify successfully, Please wait for the admin to activate')
+    ms.success('驗証成功, 請等待管理員開通您的新賬戶 | Email address successfully verified. Please wait for the admin to activate your new account.')
     router.replace('/')
   }
   catch (error: any) {
@@ -74,7 +74,7 @@ async function handleVerifyAdmin(verifytoken: string) {
   try {
     loading.value = true
     await fetchVerifyAdmin(secretKey)
-    ms.success('开通成功 | Activate successfully')
+    ms.success('成功開通賬戶! | Account activated successfully!')
     router.replace('/')
   }
   catch (error: any) {
@@ -121,7 +121,7 @@ async function handleRegister() {
   const confirmPwd = confirmPassword.value.trim()
 
   if (!name || !pwd || !confirmPwd || pwd !== confirmPwd) {
-    ms.error('两次输入的密码不一致 | Passwords don\'t match')
+    ms.error('兩次輸入的密碼不一致 | Passwords don\'t match')
     return
   }
 
