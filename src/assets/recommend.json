@@ -1,5 +1,11 @@
 [
   {
+    "key": "prompts-from-mr-ng",
+    "desc": "Prompts from Mr. Ng",
+    "downloadUrl": "https://raw.githubusercontent.com/bentwnghk/chatgpt-web/feat-add-speech/docs/prompts-from-mr-ng.json",
+    "url": "https://github.com/bentwnghk/chatgpt-web"
+  },
+  {
     "key": "awesome-chatgpt-prompts-en",
     "desc": "ChatGPT English Prompts",
     "downloadUrl": "https://raw.githubusercontent.com/luckywangxi/awesome-chatgpt-prompts-en/main/awesome-chatgpt-prompts-en.json",
