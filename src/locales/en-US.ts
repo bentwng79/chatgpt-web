@@ -81,7 +81,7 @@ export default {
     balance: 'API Balance',
     smtpHost: 'Host',
     smtpPort: 'Port',
-    smtpTsl: 'TSL',
+    smtpTsl: 'TLS',
     smtpUserName: 'UserName',
     smtpPassword: 'Password',
     siteTitle: 'Title',
@@ -95,7 +95,7 @@ export default {
     loginEnabled: 'Login Enabled',
     loginSalt: 'Password MD5 Salt',
     loginSaltTip: 'Changes will invalidate all logged in',
-    monthlyUsage: 'Monthly Usage',
+    monthlyUsage: 'Monthly Usage (US$)',
   },
   store: {
     siderButton: 'Prompt Store',
