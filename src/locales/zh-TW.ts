@@ -81,7 +81,7 @@ export default {
     balance: 'API餘額',
     smtpHost: 'Host',
     smtpPort: 'Port',
-    smtpTsl: 'TSL',
+    smtpTsl: 'TLS',
     smtpUserName: '賬號',
     smtpPassword: '密碼',
     siteTitle: '網站標題',
@@ -95,7 +95,7 @@ export default {
     loginEnabled: '註冊登錄',
     loginSalt: '密碼加密的鹽',
     loginSaltTip: '變更會導致所有已登錄失效',
-    monthlyUsage: '本月使用量',
+    monthlyUsage: '本月使用量(美元)',
   },
   store: {
     siderButton: '提示詞倉庫',
