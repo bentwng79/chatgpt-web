@@ -58,7 +58,7 @@ export default {
     showRawText: '顯示原文',
     usageEstimate: '預估',
     usagePrompt: '提問',
-    usageResponse: '回復',
+    usageResponse: '回覆',
     usageTotal: '總消耗 token',
   },
   setting: {
@@ -99,7 +99,7 @@ export default {
     apiModel: 'API模型',
     accessToken: 'Access Token',
     loginEnabled: '註冊登錄',
-    loginSalt: '密碼加密的鹽',
+    loginSalt: '加密密碼',
     loginSaltTip: '變更會導致所有已登錄失效',
     monthlyUsage: '本月使用量(美元)',
   },
