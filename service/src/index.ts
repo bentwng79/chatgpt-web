@@ -142,6 +142,14 @@ router.get('/chat-hisroty', auth, async (req, res) => {
         })
       }
       if (c.status !== Status.ResponseDeleted) {
+        const usage = c.options.completion_tokens
+          ? {
+              completion_tokens: c.options.completion_tokens || null,
+              prompt_tokens: c.options.prompt_tokens || null,
+              total_tokens: c.options.total_tokens || null,
+              estimated: c.options.estimated || null,
+            }
+          : undefined
         result.push({
           uuid: c.uuid,
           dateTime: new Date(c.dateTime).toLocaleString(),
@@ -161,6 +169,7 @@ router.get('/chat-hisroty', auth, async (req, res) => {
               conversationId: c.options.conversationId,
             },
           },
+          usage,
         })
       }
     })
@@ -263,7 +272,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
 
   try {
-    const { roomId, uuid, regenerate, prompt, options = {}, systemMessage } = req.body as RequestProps
+    const { roomId, uuid, regenerate, prompt, options = {}, systemMessage, temperature, top_p } = req.body as RequestProps
     const message = regenerate
       ? await getChat(roomId, uuid)
       : await insertChat(uuid, prompt, roomId, options as ChatOptions)
@@ -272,10 +281,24 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       message: prompt,
       lastContext: options,
       process: (chat: ChatMessage) => {
-        res.write(firstChunk ? JSON.stringify(chat) : `\n${JSON.stringify(chat)}`)
+        const chuck = {
+          id: chat.id,
+          conversationId: chat.conversationId,
+          text: chat.text,
+          detail: {
+            choices: [
+              {
+                finish_reason: chat.detail.choices[0].finish_reason,
+              },
+            ],
+          },
+        }
+        res.write(firstChunk ? JSON.stringify(chuck) : `\n${JSON.stringify(chuck)}`)
         firstChunk = false
       },
       systemMessage,
+      temperature,
+      top_p,
     })
     if (result.status === 'Success') {
       if (regenerate && message.options.messageId) {
@@ -302,6 +325,9 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
           result.data.detail.usage as UsageResponse)
       }
     }
+
+    // return the whole response including usage
+    res.write(`\n${JSON.stringify(result.data)}`)
   }
   catch (error) {
     res.write(JSON.stringify(error))
@@ -397,11 +423,13 @@ router.post('/user-login', async (req, res) => {
     if (user == null
       || user.status !== Status.Normal
       || user.password !== md5(password)) {
+      if (user.password !== md5(password))
+        throw new Error('用户不存在或密码错误 | User does not exist or incorrect password.')
       if (user != null && user.status === Status.PreVerify)
         throw new Error('請到您的郵箱查閲驗証電郵 | Please go to your mailbox and verify your email address.')
       if (user != null && user.status === Status.AdminVerify)
         throw new Error('請等待管理員開通您的新賬戶 | Please wait for the admin to activate your new account.')
-      throw new Error('用戶不存在或密碼錯誤 | User does not exist or incorrect password!')
+      throw new Error('賬戶狀態異常 | Account status abnormal.')
     }
     const config = await getCacheConfig()
     const token = jwt.sign({
@@ -470,12 +498,12 @@ router.post('/verifyadmin', async (req, res) => {
     const username = await checkUserVerifyAdmin(token)
     const user = await getUser(username)
     if (user != null && user.status === Status.Normal) {
-      res.send({ status: 'Fail', message: '賬戶已開通 | Account already activated', data: null })
+      res.send({ status: 'Fail', message: '賬戶已開通 | Account bearing this email address already activated', data: null })
       return
     }
     await verifyUser(username, Status.Normal)
     await sendNoticeMail(username)
-    res.send({ status: 'Success', message: '成功開通賬戶! | Account activated successfully!', data: null })
+    res.send({ status: 'Success', message: '成功激活賬戶! | Account activated successfully!', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
