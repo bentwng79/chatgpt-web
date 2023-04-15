@@ -99,7 +99,7 @@ export default {
     apiModel: 'API Model',
     accessToken: 'Access Token',
     loginEnabled: 'Login Enabled',
-    loginSalt: 'Password MD5 Salt',
+    loginSalt: 'Password MD5',
     loginSaltTip: 'Changes will invalidate all logged in',
     monthlyUsage: 'Monthly Usage (US$)',
   },
