@@ -476,13 +476,13 @@ router.post('/user-send-reset-mail', async (req, res) => {
   try {
     const { username } = req.body as { username: string }
     if (!username || !isEmail(username))
-      throw new Error('请输入格式正确的邮箱 | Please enter a correctly formatted email address.')
+      throw new Error('請輸入格式正確的郵箱 | Please enter a correctly formatted email address.')
 
     const user = await getUser(username)
     if (user == null || user.status !== Status.Normal)
-      throw new Error('账户状态异常 | Account status abnormal.')
+      throw new Error('賬戶狀態異常 | Account status abnormal.')
     await sendResetPasswordMail(username, await getUserResetPasswordUrl(username))
-    res.send({ status: 'Success', message: '重置邮件已发送 | Reset email has been sent', data: null })
+    res.send({ status: 'Success', message: '重置郵件已發送 | Reset email has been sent', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -493,16 +493,16 @@ router.post('/user-reset-password', async (req, res) => {
   try {
     const { username, password, sign } = req.body as { username: string; password: string; sign: string }
     if (!username || !password || !isEmail(username))
-      throw new Error('用户名或密码为空 | Username or password is empty')
+      throw new Error('使用者名或密碼為空 | Username or password is empty')
     if (!sign || !checkUserResetPassword(sign, username))
-      throw new Error('链接失效, 请重新发送 | The link is invalid, please resend.')
+      throw new Error('連結失效，請重新送出 | The link is invalid, please resend.')
     const user = await getUser(username)
     if (user == null || user.status !== Status.Normal)
-      throw new Error('账户状态异常 | Account status abnormal.')
+      throw new Error('賬戶狀態異常 | Account status abnormal.')
 
     updateUserPassword(user._id.toString(), md5(password))
 
-    res.send({ status: 'Success', message: '密码重置成功 | Password reset successful', data: null })
+    res.send({ status: 'Success', message: '密碼重置成功 | Password reset successful', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -669,7 +669,7 @@ router.post('/audit-test', rootAuth, async (req, res) => {
     const result = await containsSensitiveWords(audit, text)
     if (audit.enabled)
       initAuditService(config.auditConfig)
-    res.send({ status: 'Success', message: result ? '含敏感词 | Contains sensitive words' : '不含敏感词 | Does not contain sensitive words.', data: null })
+    res.send({ status: 'Success', message: result ? '含敏感詞 | Contains sensitive words' : '不含敏感詞 | Does not contain sensitive words.', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
