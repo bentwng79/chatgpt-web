@@ -3,10 +3,10 @@ import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
-import { chatConfig, chatReplyProcess, currentModel, initApi } from './chatgpt'
+import { chatConfig, chatReplyProcess, containsSensitiveWords, currentModel, initApi, initAuditService } from './chatgpt'
 import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
-import type { ChatInfo, ChatOptions, Config, MailConfig, SiteConfig, UsageResponse, UserInfo } from './storage/model'
+import type { AuditConfig, ChatInfo, ChatOptions, Config, MailConfig, SiteConfig, UsageResponse, UserInfo } from './storage/model'
 import { Status } from './storage/model'
 import {
   clearChat,
@@ -277,6 +277,16 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   let result
   let message: ChatInfo
   try {
+    const config = await getCacheConfig()
+    if (config.auditConfig.enabled || config.auditConfig.customizeEnabled) {
+      const userId = req.headers.userId.toString()
+      const user = await getUserById(userId)
+      if (user.email.toLowerCase() !== process.env.ROOT_USER && await containsSensitiveWords(config.auditConfig, prompt)) {
+        res.send({ status: 'Fail', message: '含有敏感词 | Contains sensitive words', data: null })
+        return
+      }
+    }
+
     message = regenerate
       ? await getChat(roomId, uuid)
       : await insertChat(uuid, prompt, roomId, options as ChatOptions)
@@ -434,17 +444,15 @@ router.post('/user-login', async (req, res) => {
       throw new Error('用戶名或密碼為空 | Username or password is empty')
 
     const user = await getUser(username)
-    if (user == null
-      || user.status !== Status.Normal
-      || user.password !== md5(password)) {
-      if (user.password !== md5(password))
-        throw new Error('用户不存在或密码错误 | User does not exist or incorrect password.')
-      if (user != null && user.status === Status.PreVerify)
-        throw new Error('請到您的郵箱查閲驗証電郵 | Please go to your mailbox and verify your email address.')
-      if (user != null && user.status === Status.AdminVerify)
-        throw new Error('請等待管理員開通您的新賬戶 | Please wait for the admin to activate your new account.')
+    if (user == null || user.password !== md5(password))
+      throw new Error('用户不存在或密码错误 | User does not exist or incorrect password.')
+    if (user.status === Status.PreVerify)
+      throw new Error('請到您的郵箱查閲驗証電郵 | Please go to your mailbox and verify your email address.')
+    if (user != null && user.status === Status.AdminVerify)
+      throw new Error('請等待管理員開通您的新賬戶 | Please wait for the admin to activate your new account.')
+    if (user.status !== Status.Normal)
       throw new Error('賬戶狀態異常 | Account status abnormal.')
-    }
+
     const config = await getCacheConfig()
     const token = jwt.sign({
       name: user.name ? user.name : user.email,
@@ -588,6 +596,39 @@ router.post('/mail-test', rootAuth, async (req, res) => {
     const user = await getUserById(userId)
     await sendTestMail(user.email, config)
     res.send({ status: 'Success', message: '發送成功 | Delivery Success', data: null })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/setting-audit', rootAuth, async (req, res) => {
+  try {
+    const config = req.body as AuditConfig
+
+    const thisConfig = await getOriginConfig()
+    thisConfig.auditConfig = config
+    const result = await updateConfig(thisConfig)
+    clearConfigCache()
+    if (config.enabled)
+      initAuditService(config)
+    res.send({ status: 'Success', message: '操作成功 | Successfully', data: result.auditConfig })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/audit-test', rootAuth, async (req, res) => {
+  try {
+    const { audit, text } = req.body as { audit: AuditConfig; text: string }
+    const config = await getCacheConfig()
+    if (audit.enabled)
+      initAuditService(audit)
+    const result = await containsSensitiveWords(audit, text)
+    if (audit.enabled)
+      initAuditService(config.auditConfig)
+    res.send({ status: 'Success', message: result ? '含敏感词 | Contains sensitive words' : '不含敏感词 | Does not contain sensitive words.', data: null })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })

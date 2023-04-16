@@ -6,6 +6,7 @@ import Advanced from './Advanced.vue'
 import About from './About.vue'
 import Site from './Site.vue'
 import Mail from './Mail.vue'
+import Audit from './Audit.vue'
 import { SvgIcon } from '@/components/common'
 import { useAuthStore, useUserStore } from '@/store'
 
@@ -39,7 +40,7 @@ const show = computed({
 </script>
 
 <template>
-  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 640px">
+  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 1024px">
     <div>
       <NTabs v-model:value="active" type="line" animated>
         <NTabPane name="General" tab="General">
@@ -80,6 +81,13 @@ const show = computed({
             <span class="ml-2">{{ $t('setting.mailConfig') }}</span>
           </template>
           <Mail />
+        </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="AuditConfig" tab="AuditConfig">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri:settings-line" />
+            <span class="ml-2">{{ $t('setting.auditConfig') }}</span>
+          </template>
+          <Audit />
         </NTabPane>
       </NTabs>
     </div>
