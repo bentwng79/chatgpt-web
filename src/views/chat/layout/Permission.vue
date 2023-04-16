@@ -181,7 +181,7 @@ async function handleResetPassword() {
   const confirmPwd = confirmPassword.value.trim()
 
   if (!name || !pwd || !confirmPwd || pwd !== confirmPwd) {
-    ms.error('两次输入的密码不一致 | Passwords don\'t match')
+    ms.error('兩次輸入的密碼不一致 | Passwords don\'t match')
     return
   }
 
