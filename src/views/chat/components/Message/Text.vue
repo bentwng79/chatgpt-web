@@ -70,9 +70,9 @@ function addCopyEvents() {
         const code = btn.parentElement?.nextElementSibling?.textContent
         if (code) {
           copyToClip(code).then(() => {
-            btn.textContent = '复制成功'
+            btn.textContent = '複製成功'
             setTimeout(() => {
-              btn.textContent = '复制代码'
+              btn.textContent = '複製代碼'
             }, 1000)
           })
         }
