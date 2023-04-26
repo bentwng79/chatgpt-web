@@ -99,7 +99,7 @@ export default {
     registerReview: 'Register Review',
     registerMails: 'Register Mails',
     apiBaseUrl: 'API Base URL',
-    apiModel: 'API Model',
+    apiModel: 'Chat Model',
     accessToken: 'Access Token',
     loginEnabled: 'Login Enabled',
     loginSalt: 'Password MD5',

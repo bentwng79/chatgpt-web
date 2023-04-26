@@ -417,7 +417,13 @@ router.post('/user-register', async (req, res) => {
 
     const user = await getUser(username)
     if (user != null) {
-      res.send({ status: 'Fail', message: '郵箱已存在 | Email address already exists', data: null })
+      if (user.status === Status.PreVerify) {
+        await sendVerifyMail(username, await getUserVerifyUrl(username))
+        throw new Error('請到您的郵箱查閲驗証電郵 | Please go to your mailbox and verify your email address.')
+      }
+      if (user.status === Status.AdminVerify)
+        throw new Error('請等待管理員開通 | Please wait for your new account to be activated manually')
+      res.send({ status: 'Fail', message: '賬號已存在 | An account with this email address already exists', data: null })
       return
     }
     const newPassword = md5(password)
@@ -476,7 +482,7 @@ router.post('/user-login', async (req, res) => {
     if (user.status === Status.PreVerify)
       throw new Error('請到您的郵箱查閲驗証電郵 | Please go to your mailbox and verify your email address.')
     if (user != null && user.status === Status.AdminVerify)
-      throw new Error('請等待管理員開通您的新賬戶 | Please wait for the admin to activate your new account.')
+      throw new Error('請等待管理員開通您的新賬戶 | Please wait for your new account to be activated manually.')
     if (user.status !== Status.Normal)
       throw new Error('賬戶狀態異常 | Account status abnormal.')
 
@@ -556,7 +562,7 @@ router.post('/verify', async (req, res) => {
     const username = await checkUserVerify(token)
     const user = await getUser(username)
     if (user != null && user.status === Status.Normal) {
-      res.send({ status: 'Fail', message: '郵箱已存在 | Email address already in use', data: null })
+      res.send({ status: 'Fail', message: '賬號已存在 | An account with this email address already exists', data: null })
       return
     }
     const config = await getCacheConfig()
