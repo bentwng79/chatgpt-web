@@ -99,7 +99,7 @@ export default {
     registerReview: '新用戶審核',
     registerMails: '郵箱類別',
     apiBaseUrl: '接口地址',
-    apiModel: '接口类型',
+    apiModel: '接口類型',
     chatModel: '模型',
     accessToken: 'Access Token',
     loginEnabled: '註冊登錄',
