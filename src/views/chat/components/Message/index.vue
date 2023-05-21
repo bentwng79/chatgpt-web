@@ -125,11 +125,11 @@ async function handlePreviousResponse(next: number) {
     </div>
     <div class="overflow-hidden text-sm " :class="[inversion ? 'items-end' : 'items-start']">
       <p v-if="inversion" class="text-xs text-[#b4bbc4]" :class="[inversion ? 'text-right' : 'text-left']">
-        {{ dateTime }}
+        {{ new Date(dateTime).toLocaleString() }}
       </p>
       <p v-else class="text-xs text-[#b4bbc4]" :class="[inversion ? 'text-right' : 'text-left']">
         <NSpace>
-          {{ dateTime }}
+          {{ new Date(dateTime).toLocaleString() }}
           <NButtonGroup v-if="!inversion && responseCount && responseCount > 1">
             <NButton
               style="cursor: pointer;"
