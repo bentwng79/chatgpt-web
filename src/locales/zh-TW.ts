@@ -61,7 +61,10 @@ export default {
     usageEstimate: '💰Token 消耗：',
     usagePrompt: '提問',
     usageResponse: '回答',
-    usageTotal: '合計',
+    usageTotal: '總消耗Token',
+    deleteUser: '删除用户',
+    deleteUserConfirm: '你確定要刪除這個用戶嗎？',
+    verifiedUser: '通過驗證',
   },
   setting: {
     setting: '設定',
@@ -124,6 +127,7 @@ export default {
     auditCustomizeEnabled: '自定義',
     auditCustomizeWords: '敏感詞',
     accessTokenExpiredTime: '失效日期',
+    userConfig: '用户管理',
   },
   store: {
     siderButton: '提示詞倉庫',
