@@ -20,17 +20,17 @@ const columns = [
     maxWidth: 200,
   },
   {
-    title: '注册时间',
+    title: '註冊時間',
     key: 'createTime',
     width: 220,
   },
   {
-    title: '验证时间',
+    title: '驗證時間',
     key: 'verifyTime',
     width: 220,
   },
   {
-    title: '管理员',
+    title: '管理員',
     key: 'status',
     width: 200,
     render(row: any) {
@@ -53,7 +53,7 @@ const columns = [
     },
   },
   {
-    title: '状态',
+    title: '狀態',
     key: 'status',
     width: 200,
     render(row: any) {
@@ -61,7 +61,7 @@ const columns = [
     },
   },
   {
-    title: 'Action',
+    title: '操作',
     key: '_id',
     width: 200,
     render(row: any) {

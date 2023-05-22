@@ -656,7 +656,7 @@ router.post('/user-chat-model', auth, async (req, res) => {
     if (user == null || user.status !== Status.Normal)
       throw new Error('用户不存在 | User does not exist.')
     await updateUserChatModel(userId, chatModel)
-    res.send({ status: 'Success', message: '更新成功 | Update successfully' })
+    res.send({ status: 'Success', message: '更新成功 | Updated successfully' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -668,7 +668,7 @@ router.get('/users', rootAuth, async (req, res) => {
     const page = +req.query.page
     const size = +req.query.size
     const data = await getUsers(page, size)
-    res.send({ status: 'Success', message: '获取成功 | Get successfully', data })
+    res.send({ status: 'Success', message: '獲取成功 | Retrieved successfully', data })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -679,7 +679,7 @@ router.post('/user-status', rootAuth, async (req, res) => {
   try {
     const { userId, status } = req.body as { userId: string; status: Status }
     await updateUserStatus(userId, status)
-    res.send({ status: 'Success', message: '更新成功 | Update successfully' })
+    res.send({ status: 'Success', message: '更新成功 | Updated successfully' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -816,7 +816,7 @@ router.post('/setting-audit', rootAuth, async (req, res) => {
     clearConfigCache()
     if (config.enabled)
       initAuditService(config)
-    res.send({ status: 'Success', message: '操作成功 | Successfully', data: result.auditConfig })
+    res.send({ status: 'Success', message: '操作成功 | Operation Successful', data: result.auditConfig })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
