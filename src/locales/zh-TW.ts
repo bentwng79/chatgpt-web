@@ -108,7 +108,6 @@ export default {
     registerMails: '郵箱類別',
     apiBaseUrl: '接口地址',
     apiModel: '接口類型',
-    chatModel: '模型',
     accessToken: 'Access Token',
     loginEnabled: '註冊登錄',
     loginSalt: '加密密碼',
