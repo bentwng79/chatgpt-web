@@ -27,7 +27,7 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: 'Api Model',
+    title: 'API Model',
     key: 'keyModel',
     width: 190,
   },

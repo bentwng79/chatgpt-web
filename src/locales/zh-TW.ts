@@ -134,7 +134,7 @@ export default {
     userConfig: '用户管理',
     keysConfig: 'Key 管理',
     userRoles: '用戶權限',
-    status: '身分',
+    status: '狀態',
     chatModels: '對話模型',
   },
   store: {

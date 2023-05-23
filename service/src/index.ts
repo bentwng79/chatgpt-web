@@ -394,7 +394,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     const user = await getUserById(userId)
     if (config.auditConfig.enabled || config.auditConfig.customizeEnabled) {
       if (!user.roles.includes(UserRole.Admin) && await containsSensitiveWords(config.auditConfig, prompt)) {
-        res.send({ status: 'Fail', message: '含有敏感词 | Contains sensitive words', data: null })
+        res.send({ status: 'Fail', message: '含有敏感詞 | Contains sensitive words', data: null })
         return
       }
     }

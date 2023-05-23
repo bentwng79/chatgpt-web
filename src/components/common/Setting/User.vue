@@ -15,7 +15,7 @@ const userRef = ref(new UserInfo([UserRole.User]))
 const users = ref([])
 const columns = [
   {
-    title: 'Email',
+    title: '帳戶電郵',
     key: 'email',
     resizable: true,
     width: 200,
@@ -23,17 +23,17 @@ const columns = [
     maxWidth: 200,
   },
   {
-    title: 'Register Time',
+    title: '註冊時間',
     key: 'createTime',
     width: 220,
   },
   {
-    title: 'Verify Time',
+    title: '驗證時間',
     key: 'verifyTime',
     width: 220,
   },
   {
-    title: 'Roles',
+    title: '角色',
     key: 'status',
     width: 200,
     render(row: any) {
@@ -56,7 +56,7 @@ const columns = [
     },
   },
   {
-    title: 'Status',
+    title: '狀態',
     key: 'status',
     width: 200,
     render(row: any) {
