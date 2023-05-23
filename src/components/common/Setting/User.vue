@@ -1,13 +1,16 @@
 <script lang="ts" setup>
 import { h, onMounted, reactive, ref } from 'vue'
-import { NButton, NDataTable, NTag, useDialog, useMessage } from 'naive-ui'
-import { Status } from './model'
-import { fetchGetUsers, fetchUpdateUserStatus } from '@/api'
+import { NButton, NDataTable, NModal, NSelect, NTag, useDialog, useMessage } from 'naive-ui'
+import { Status, UserInfo, UserRole, userRoleOptions } from './model'
+import { fetchGetUsers, fetchUpdateUserRole, fetchUpdateUserStatus } from '@/api'
 import { t } from '@/locales'
 
 const ms = useMessage()
 const dialog = useDialog()
 const loading = ref(false)
+const show = ref(false)
+const handleSaving = ref(false)
+const userRef = ref(new UserInfo([UserRole.User]))
 
 const users = ref([])
 const columns = [
@@ -20,21 +23,21 @@ const columns = [
     maxWidth: 200,
   },
   {
-    title: '註冊時間',
+    title: 'Register Time',
     key: 'createTime',
     width: 220,
   },
   {
-    title: '驗證時間',
+    title: 'Verify Time',
     key: 'verifyTime',
     width: 220,
   },
   {
-    title: '管理員',
+    title: 'Roles',
     key: 'status',
     width: 200,
     render(row: any) {
-      if (row.root) {
+      const roles = row.roles.map((role: UserRole) => {
         return h(
           NTag,
           {
@@ -45,15 +48,15 @@ const columns = [
             bordered: false,
           },
           {
-            default: () => 'Admin',
+            default: () => UserRole[role],
           },
         )
-      }
-      return '-'
+      })
+      return roles
     },
   },
   {
-    title: '狀態',
+    title: 'Status',
     key: 'status',
     width: 200,
     render(row: any) {
@@ -66,18 +69,30 @@ const columns = [
     width: 200,
     render(row: any) {
       const actions: any[] = []
-      if (row.root)
-        return actions
-
       if (row.status === Status.Normal) {
         actions.push(h(
           NButton,
           {
             size: 'small',
             type: 'error',
+            style: {
+              marginRight: '6px',
+            },
             onClick: () => handleUpdateUserStatus(row._id, Status.Deleted),
           },
           { default: () => t('chat.deleteUser') },
+        ))
+        actions.push(h(
+          NButton,
+          {
+            size: 'small',
+            type: 'primary',
+            style: {
+              marginRight: '6px',
+            },
+            onClick: () => handleEditUser(row),
+          },
+          { default: () => t('chat.setUserRole') },
         ))
       }
       if (row.status === Status.PreVerify || row.status === Status.AdminVerify) {
@@ -153,6 +168,28 @@ async function handleUpdateUserStatus(userId: string, status: Status) {
   }
 }
 
+function handleEditUser(user: UserInfo) {
+  userRef.value = user
+  show.value = true
+}
+
+async function handleUpdateUserRoles() {
+  if (!userRef.value._id) {
+    ms.error('User Error')
+    return
+  }
+  handleSaving.value = true
+  try {
+    await fetchUpdateUserRole(userRef.value._id, userRef.value.roles)
+    await handleGetUsers(pagination.page)
+    show.value = false
+  }
+  catch (error: any) {
+    ms.error(error.message)
+  }
+  handleSaving.value = false
+}
+
 onMounted(async () => {
   await handleGetUsers(pagination.page)
 })
@@ -175,4 +212,29 @@ onMounted(async () => {
       />
     </div>
   </div>
+
+  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width:50%;">
+    <div class="p-4 space-y-5 min-h-[200px]">
+      <div class="space-y-6">
+        <div class="flex items-center space-x-4">
+          <span class="flex-shrink-0 w-[100px]">{{ $t('setting.userRoles') }}</span>
+          <div class="flex-1">
+            <NSelect
+              style="width: 100%"
+              multiple
+              :value="userRef.roles"
+              :options="userRoleOptions"
+              @update-value="value => userRef.roles = value"
+            />
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="flex-shrink-0 w-[100px]" />
+          <NButton type="primary" :loading="handleSaving" @click="handleUpdateUserRoles()">
+            {{ $t('common.save') }}
+          </NButton>
+        </div>
+      </div>
+    </div>
+  </NModal>
 </template>

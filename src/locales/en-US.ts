@@ -63,8 +63,12 @@ export default {
     usageResponse: 'Response',
     usageTotal: 'Total',
     deleteUser: 'Delete User',
+    setUserRole: 'Set Role',
     deleteUserConfirm: 'Are you sure to delete this user?',
     verifiedUser: 'Verified User',
+    deleteKey: 'Delete Key',
+    editKeyButton: 'Edit Key',
+    deleteKeyConfirm: 'Are you sure to delete this key?',
   },
   setting: {
     setting: 'Setting',
@@ -128,6 +132,10 @@ export default {
     auditCustomizeWords: 'Sensitive Words',
     accessTokenExpiredTime: 'Expire on',
     userConfig: 'Users',
+    keysConfig: 'Keys Manager',
+    userRoles: 'User Role',
+    status: 'Status',
+    chatModels: 'Chat Models',
   },
   store: {
     siderButton: 'Prompt Store',

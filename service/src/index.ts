@@ -4,11 +4,11 @@ import * as dotenv from 'dotenv'
 import { ObjectId } from 'mongodb'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
-import { chatConfig, chatReplyProcess, containsSensitiveWords, initAuditService } from './chatgpt'
-import { auth } from './middleware/auth'
-import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
-import type { AuditConfig, CHATMODEL, ChatInfo, ChatOptions, Config, MailConfig, SiteConfig, UsageResponse, UserInfo } from './storage/model'
-import { Status } from './storage/model'
+import { chatConfig, chatReplyProcess, containsSensitiveWords, getRandomApiKey, initAuditService } from './chatgpt'
+import { auth, getUserId } from './middleware/auth'
+import { clearApiKeyCache, clearConfigCache, getApiKeys, getCacheApiKeys, getCacheConfig, getOriginConfig } from './storage/config'
+import type { AuditConfig, CHATMODEL, ChatInfo, ChatOptions, Config, KeyConfig, MailConfig, SiteConfig, UsageResponse, UserInfo } from './storage/model'
+import { Status, UserRole, chatModelOptions } from './storage/model'
 import {
   clearChat,
   createChatRoom,
@@ -28,6 +28,7 @@ import {
   insertChat,
   insertChatUsage,
   renameChatRoom,
+  updateApiKeyStatus,
   updateChat,
   updateConfig,
   updateRoomPrompt,
@@ -35,11 +36,13 @@ import {
   updateUserChatModel,
   updateUserInfo,
   updateUserPassword,
+  updateUserRole,
   updateUserStatus,
+  upsertKey,
   verifyUser,
 } from './storage/mongo'
 import { limiter } from './middleware/limiter'
-import { isEmail, isNotEmptyString } from './utils/is'
+import { hasAnyRole, isEmail, isNotEmptyString } from './utils/is'
 import { sendNoticeMail, sendResetPasswordMail, sendTestMail, sendVerifyMail, sendVerifyMailAdmin } from './utils/mail'
 import { checkUserResetPassword, checkUserVerify, checkUserVerifyAdmin, getUserResetPasswordUrl, getUserVerifyUrl, getUserVerifyUrlAdmin, md5 } from './utils/security'
 import { rootAuth } from './middleware/rootAuth'
@@ -390,7 +393,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     const userId = req.headers.userId.toString()
     const user = await getUserById(userId)
     if (config.auditConfig.enabled || config.auditConfig.customizeEnabled) {
-      if (user.email.toLowerCase() !== process.env.ROOT_USER && await containsSensitiveWords(config.auditConfig, prompt)) {
+      if (!user.roles.includes(UserRole.Admin) && await containsSensitiveWords(config.auditConfig, prompt)) {
         res.send({ status: 'Fail', message: '含有敏感词 | Contains sensitive words', data: null })
         return
       }
@@ -427,12 +430,13 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       temperature,
       top_p,
       chatModel: user.config.chatModel,
+      key: await getRandomApiKey(user, user.config.chatModel),
     })
     // return the whole response including usage
     res.write(`\n${JSON.stringify(result.data)}`)
   }
   catch (error) {
-    res.write(JSON.stringify(error))
+    res.write(JSON.stringify({ message: error?.message }))
   }
   finally {
     res.end()
@@ -516,9 +520,10 @@ router.post('/user-register', async (req, res) => {
       return
     }
     const newPassword = md5(password)
-    await createUser(username, newPassword)
+    const isRoot = username.toLowerCase() === process.env.ROOT_USER
+    await createUser(username, newPassword, isRoot)
 
-    if (username.toLowerCase() === process.env.ROOT_USER) {
+    if (isRoot) {
       res.send({ status: 'Success', message: '註冊成功 | Signup successful', data: null })
     }
     else {
@@ -536,7 +541,7 @@ router.post('/config', rootAuth, async (req, res) => {
     const userId = req.headers.userId.toString()
 
     const user = await getUserById(userId)
-    if (user == null || user.status !== Status.Normal || user.email.toLowerCase() !== process.env.ROOT_USER)
+    if (user == null || user.status !== Status.Normal || !user.roles.includes(UserRole.Admin))
       throw new Error('無權限 | No permission.')
 
     const response = await chatConfig()
@@ -554,8 +559,52 @@ router.post('/session', async (req, res) => {
     const allowRegister = (await getCacheConfig()).siteConfig.registerEnabled
     if (config.apiModel !== 'ChatGPTAPI' && config.apiModel !== 'ChatGPTUnofficialProxyAPI')
       config.apiModel = 'ChatGPTAPI'
+    const userId = await getUserId(req)
+    const chatModels: {
+      label
+      key: string
+      value: string
+    }[] = []
+    if (userId != null) {
+      const user = await getUserById(userId)
+      const keys = (await getCacheApiKeys()).filter(d => hasAnyRole(d.userRoles, user.roles))
 
-    res.send({ status: 'Success', message: '', data: { auth: hasAuth, allowRegister, model: config.apiModel, title: config.siteConfig.siteTitle } })
+      const count: { key: string; count: number }[] = []
+      chatModelOptions.forEach((chatModel) => {
+        keys.forEach((key) => {
+          if (key.chatModels.includes(chatModel.value)) {
+            if (count.filter(d => d.key === chatModel.value).length <= 0) {
+              count.push({ key: chatModel.value, count: 1 })
+            }
+            else {
+              const thisCount = count.filter(d => d.key === chatModel.value)[0]
+              thisCount.count++
+            }
+          }
+        })
+      })
+      count.forEach((c) => {
+        const thisChatModel = chatModelOptions.filter(d => d.value === c.key)[0]
+        chatModels.push({
+          label: `${thisChatModel.label} (${c.count})`,
+          key: c.key,
+          value: c.key,
+        })
+      })
+    }
+
+    res.send({
+      status: 'Success',
+      message: '',
+      data: {
+        auth: hasAuth,
+        allowRegister,
+        model: config.apiModel,
+        title: config.siteConfig.siteTitle,
+        chatModels,
+        allChatModels: chatModelOptions,
+      },
+    })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -584,7 +633,7 @@ router.post('/user-login', async (req, res) => {
       avatar: user.avatar,
       description: user.description,
       userId: user._id,
-      root: username.toLowerCase() === process.env.ROOT_USER,
+      root: user.roles.includes(UserRole.Admin),
       config: user.config,
     }, config.siteConfig.loginSalt.trim())
     res.send({ status: 'Success', message: '登錄成功 | Login successful', data: { token } })
@@ -678,8 +727,22 @@ router.get('/users', rootAuth, async (req, res) => {
 router.post('/user-status', rootAuth, async (req, res) => {
   try {
     const { userId, status } = req.body as { userId: string; status: Status }
+    const user = await getUserById(userId)
     await updateUserStatus(userId, status)
-    res.send({ status: 'Success', message: '更新成功 | Updated successfully' })
+    if ((user.status === Status.PreVerify || user.status === Status.AdminVerify) && status === Status.Normal)
+      await sendNoticeMail(user.email)
+    res.send({ status: 'Success', message: '更新成功 | Update successful' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user-role', rootAuth, async (req, res) => {
+  try {
+    const { userId, roles } = req.body as { userId: string; roles: UserRole[] }
+    await updateUserRole(userId, roles)
+    res.send({ status: 'Success', message: '更新成功 | Update successful' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -833,6 +896,41 @@ router.post('/audit-test', rootAuth, async (req, res) => {
     if (audit.enabled)
       initAuditService(config.auditConfig)
     res.send({ status: 'Success', message: result ? '含敏感詞 | Contains sensitive words' : '不含敏感詞 | Does not contain sensitive words.', data: null })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.get('/setting-keys', rootAuth, async (req, res) => {
+  try {
+    const result = await getApiKeys()
+    res.send({ status: 'Success', message: null, data: result })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/setting-key-status', rootAuth, async (req, res) => {
+  try {
+    const { id, status } = req.body as { id: string; status: Status }
+    await updateApiKeyStatus(id, status)
+    res.send({ status: 'Success', message: '更新成功 | Update successfully' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/setting-key-upsert', rootAuth, async (req, res) => {
+  try {
+    const keyConfig = req.body as KeyConfig
+    if (keyConfig._id !== undefined)
+      keyConfig._id = new ObjectId(keyConfig._id)
+    await upsertKey(keyConfig)
+    clearApiKeyCache()
+    res.send({ status: 'Success', message: '成功 | Successful' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
