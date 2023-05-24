@@ -64,7 +64,7 @@ export default {
     usageTotal: '總消耗Token',
     deleteUser: '删除用户',
     setUserRole: '設置權限',
-    deleteUserConfirm: '你確定要刪除這個用戶嗎？',
+    deleteUserConfirm: '你確定要刪除這個用戶嗎？刪除後這個郵箱永遠無法註冊登錄。',
     verifiedUser: '通過驗證',
     deleteKey: '删除 Key',
     editKeyButton: '編輯 Key',
