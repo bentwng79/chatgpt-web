@@ -124,7 +124,7 @@ const pagination = reactive({
   pageCount: 1,
   itemCount: 1,
   prefix({ itemCount }: { itemCount: number | undefined }) {
-    return `Total is ${itemCount}.`
+    return `共計：${itemCount}`
   },
   showSizePicker: true,
   pageSizes: [100],
