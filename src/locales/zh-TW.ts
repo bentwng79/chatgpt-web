@@ -86,7 +86,7 @@ export default {
     temperature: '思維發散程度',
     top_p: 'Top_p',
     saveUserInfo: '保存用户資訊',
-    chatHistory: '紀錄',
+    chatHistory: '對話紀錄',
     theme: '主題',
     language: '語言',
     api: 'API Key',
@@ -136,6 +136,7 @@ export default {
     userRoles: '用戶權限',
     status: '狀態',
     chatModels: '對話模型',
+    remark: '備註',
   },
   store: {
     siderButton: '提示詞倉庫',
