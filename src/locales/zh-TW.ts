@@ -35,6 +35,7 @@ export default {
     passwordConfirm: '確認密碼',
     resetPassword: '重置密碼',
     resetPasswordMail: '發送重置密碼郵件',
+    auditTip: '敏感詞對管理員不生效',
   },
   chat: {
     newChatButton: '新建對話',
