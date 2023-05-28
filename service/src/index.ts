@@ -498,7 +498,7 @@ router.post('/chat-abort', [auth, limiter], async (req, res) => {
     res.send({ status: 'Success', message: 'OK', data: null })
   }
   catch (error) {
-    res.send({ status: 'Fail', message: '重置邮件已发送 | Reset email has been sent', data: null })
+    res.send({ status: 'Fail', message: '無法中止聊天。 | Failed to abort chat.', data: null })
   }
 })
 
@@ -688,7 +688,7 @@ router.post('/user-reset-password', async (req, res) => {
     if (!username || !password || !isEmail(username))
       throw new Error('使用者名或密碼為空 | Username or password is empty')
     if (!sign || !checkUserResetPassword(sign, username))
-      throw new Error('連結失效，請重新送出 | The link is invalid, please resend.')
+      throw new Error('連結失效，請重新送出。 | The link is invalid. Please resend.')
     const user = await getUser(username)
     if (user == null || user.status !== Status.Normal)
       throw new Error('賬戶狀態異常 | Account status abnormal.')
