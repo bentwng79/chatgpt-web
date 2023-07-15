@@ -32,6 +32,7 @@ import {
   updateApiKeyStatus,
   updateChat,
   updateConfig,
+  updateRoomChatModel,
   updateRoomPrompt,
   updateRoomUsingContext,
   updateUser,
@@ -75,6 +76,7 @@ router.get('/chatrooms', auth, async (req, res) => {
         isEdit: false,
         prompt: r.prompt,
         usingContext: r.usingContext === undefined ? true : r.usingContext,
+        chatModel: r.chatModel,
       })
     })
     res.send({ status: 'Success', message: null, data: result })
@@ -120,6 +122,22 @@ router.post('/room-prompt', auth, async (req, res) => {
       res.send({ status: 'Success', message: 'Saved successfully', data: null })
     else
       res.send({ status: 'Fail', message: 'Failed to save', data: null })
+  }
+  catch (error) {
+    console.error(error)
+    res.send({ status: 'Fail', message: 'Rename error', data: null })
+  }
+})
+
+router.post('/room-chatmodel', auth, async (req, res) => {
+  try {
+    const userId = req.headers.userId as string
+    const { chatModel, roomId } = req.body as { chatModel: CHATMODEL; roomId: number }
+    const success = await updateRoomChatModel(userId, roomId, chatModel)
+    if (success)
+      res.send({ status: 'Success', message: 'Saved successfully', data: null })
+    else
+      res.send({ status: 'Fail', message: 'Saved Failed', data: null })
   }
   catch (error) {
     console.error(error)
@@ -557,7 +575,7 @@ router.post('/session', async (req, res) => {
       key: string
       value: string
     }[] = []
-    let userInfo: { name: string; description: string; avatar: string; userId: string; root: boolean; config: UserConfig }
+    let userInfo: { name: string; description: string; avatar: string; userId: string; root: boolean; roles: UserRole[]; config: UserConfig }
     if (userId != null) {
       const user = await getUserById(userId)
       userInfo = {
@@ -566,6 +584,7 @@ router.post('/session', async (req, res) => {
         avatar: user.avatar,
         userId: user._id.toString(),
         root: user.roles.includes(UserRole.Admin),
+        roles: user.roles,
         config: user.config,
       }
 
