@@ -122,7 +122,7 @@ onMounted(() => {
           <div class="flex-1">
             <NInput
               :value="config && config.chatModels"
-              placeholder="英文逗号分割 | English comma separated"
+              placeholder="英文逗號分割 | English comma separated"
               type="textarea"
               :autosize="{ minRows: 1, maxRows: 4 }"
               @input="(val) => { if (config) config.chatModels = val }"

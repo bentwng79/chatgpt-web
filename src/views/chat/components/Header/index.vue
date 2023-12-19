@@ -74,7 +74,7 @@ function handleShowPrompt() {
             <IconPrompt class="w-[20px] m-auto" />
           </span>
         </HoverButton>
-        <HoverButton :tooltip="usingContext ? '点击停止包含上下文' : '点击开启包含上下文'" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }" @click="toggleUsingContext">
+        <HoverButton :tooltip="usingContext ? '點擊停止包含上下文' : '點擊開啟包含上下文'" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }" @click="toggleUsingContext">
           <span class="text-xl">
             <SvgIcon icon="ri:chat-history-line" />
           </span>
