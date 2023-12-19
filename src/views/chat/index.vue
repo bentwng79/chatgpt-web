@@ -18,7 +18,6 @@ import { t } from '@/locales'
 import { debounce } from '@/utils/functions/debounce'
 import IconPrompt from '@/icons/Prompt.vue'
 import { UserConfig } from '@/components/common/Setting/model'
-import type { CHATMODEL } from '@/components/common/Setting/model'
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
 
 let controller = new AbortController()
@@ -49,7 +48,7 @@ const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 const showPrompt = ref(false)
-const nowSelectChatModel = ref<CHATMODEL | null>(null)
+const nowSelectChatModel = ref<string | null>(null)
 const currentChatModel = computed(() => nowSelectChatModel.value ?? currentChatHistory.value?.chatModel ?? userStore.userInfo.config.chatModel)
 
 let loadingms: MessageReactive
@@ -581,7 +580,7 @@ const footerClass = computed(() => {
   return classes
 })
 
-async function handleSyncChatModel(chatModel: CHATMODEL) {
+async function handleSyncChatModel(chatModel: string) {
   nowSelectChatModel.value = chatModel
   if (userStore.userInfo.config == null)
     userStore.userInfo.config = new UserConfig()
@@ -683,10 +682,11 @@ onUnmounted(() => {
                 <IconPrompt class="w-[20px] m-auto" />
               </span>
             </HoverButton>
-            <HoverButton v-if="!isMobile" @click="handleToggleUsingContext">
-              <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+            <HoverButton v-if="!isMobile" :tooltip="usingContext ? '点击停止包含上下文' : '点击开启包含上下文'" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }" @click="handleToggleUsingContext">
+              <span class="text-xl">
                 <SvgIcon icon="ri:chat-history-line" />
               </span>
+              <span style="margin-left:.25em">{{ usingContext ? '包含上下文' : '不含上下文' }}</span>
             </HoverButton>
             <NSelect
               style="width: 250px"

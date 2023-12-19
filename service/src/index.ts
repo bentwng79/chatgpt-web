@@ -3,13 +3,14 @@ import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
 import { ObjectId } from 'mongodb'
 import { textTokens } from 'gpt-token'
-import type { RequestProps } from './types'
+import speakeasy from 'speakeasy'
+import { type RequestProps, TwoFAConfig } from './types'
 import type { ChatMessage } from './chatgpt'
 import { abortChatProcess, chatConfig, chatReplyProcess, containsSensitiveWords, initAuditService } from './chatgpt'
 import { auth, getUserId } from './middleware/auth'
 import { clearApiKeyCache, clearConfigCache, getApiKeys, getCacheApiKeys, getCacheConfig, getOriginConfig } from './storage/config'
-import type { AuditConfig, CHATMODEL, ChatInfo, ChatOptions, Config, KeyConfig, MailConfig, SiteConfig, UserConfig, UserInfo } from './storage/model'
-import { Status, UsageResponse, UserRole, chatModelOptions } from './storage/model'
+import type { AuditConfig, ChatInfo, ChatOptions, Config, KeyConfig, MailConfig, SiteConfig, UserConfig, UserInfo } from './storage/model'
+import { Status, UsageResponse, UserRole } from './storage/model'
 import {
   clearChat,
   createChatRoom,
@@ -17,6 +18,7 @@ import {
   deleteAllChatRooms,
   deleteChat,
   deleteChatRoom,
+  disableUser2FA,
   existsChatRoom,
   getChat,
   getChatRoom,
@@ -36,9 +38,11 @@ import {
   updateRoomPrompt,
   updateRoomUsingContext,
   updateUser,
+  updateUser2FA,
   updateUserChatModel,
   updateUserInfo,
   updateUserPassword,
+  updateUserPasswordWithVerifyOld,
   updateUserStatus,
   upsertKey,
   verifyUser,
@@ -132,7 +136,7 @@ router.post('/room-prompt', auth, async (req, res) => {
 router.post('/room-chatmodel', auth, async (req, res) => {
   try {
     const userId = req.headers.userId as string
-    const { chatModel, roomId } = req.body as { chatModel: CHATMODEL; roomId: number }
+    const { chatModel, roomId } = req.body as { chatModel: string; roomId: number }
     const success = await updateRoomChatModel(userId, roomId, chatModel)
     if (success)
       res.send({ status: 'Success', message: 'Saved successfully', data: null })
@@ -419,8 +423,8 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
         result.data.detail = {}
       result.data.detail.usage = new UsageResponse()
       // 因为 token 本身不计算, 所以这里默认以 gpt 3.5 的算做一个伪统计
-      result.data.detail.usage.prompt_tokens = textTokens(prompt, 'gpt-3.5-turbo-0613')
-      result.data.detail.usage.completion_tokens = textTokens(result.data.text, 'gpt-3.5-turbo-0613')
+      result.data.detail.usage.prompt_tokens = textTokens(prompt, 'gpt-3.5-turbo')
+      result.data.detail.usage.completion_tokens = textTokens(result.data.text, 'gpt-3.5-turbo')
       result.data.detail.usage.total_tokens = result.data.detail.usage.prompt_tokens + result.data.detail.usage.completion_tokens
       result.data.detail.usage.estimated = true
     }
@@ -575,6 +579,18 @@ router.post('/session', async (req, res) => {
       key: string
       value: string
     }[] = []
+
+    const chatModelOptions = config.siteConfig.chatModels.split(',').map((model: string) => {
+      let label = model
+      if (model === 'text-davinci-002-render-sha-mobile')
+        label = 'gpt-3.5-mobile'
+      return {
+        label,
+        key: model,
+        value: model,
+      }
+    })
+
     let userInfo: { name: string; description: string; avatar: string; userId: string; root: boolean; roles: UserRole[]; config: UserConfig }
     if (userId != null) {
       const user = await getUserById(userId)
@@ -636,7 +652,7 @@ router.post('/session', async (req, res) => {
 
 router.post('/user-login', authLimiter, async (req, res) => {
   try {
-    const { username, password } = req.body as { username: string; password: string }
+    const { username, password, token } = req.body as { username: string; password: string; token?: string }
     if (!username || !password || !isEmail(username))
       throw new Error('用戶名或密碼為空 | Username or password is empty')
 
@@ -649,9 +665,24 @@ router.post('/user-login', authLimiter, async (req, res) => {
       throw new Error('請等待管理員開通您的新賬戶 | Please wait for your new account to be activated manually.')
     if (user.status !== Status.Normal)
       throw new Error('賬戶狀態異常 | Account status abnormal.')
+    if (user.secretKey) {
+      if (token) {
+        const verified = speakeasy.totp.verify({
+          secret: user.secretKey,
+          encoding: 'base32',
+          token,
+        })
+        if (!verified)
+          throw new Error('驗證碼錯誤 | Two-step verification code error')
+      }
+      else {
+        res.send({ status: 'Success', message: '需要兩步驗證 | Two-step verification required', data: { need2FA: true } })
+        return
+      }
+    }
 
     const config = await getCacheConfig()
-    const token = jwt.sign({
+    const jwtToken = jwt.sign({
       name: user.name ? user.name : user.email,
       avatar: user.avatar,
       description: user.description,
@@ -659,7 +690,7 @@ router.post('/user-login', authLimiter, async (req, res) => {
       root: user.roles.includes(UserRole.Admin),
       config: user.config,
     }, config.siteConfig.loginSalt.trim())
-    res.send({ status: 'Success', message: '登錄成功 | Login successful', data: { token } })
+    res.send({ status: 'Success', message: '登錄成功 | Login successful', data: { token: jwtToken } })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -721,7 +752,7 @@ router.post('/user-info', auth, async (req, res) => {
 
 router.post('/user-chat-model', auth, async (req, res) => {
   try {
-    const { chatModel } = req.body as { chatModel: CHATMODEL }
+    const { chatModel } = req.body as { chatModel: string }
     const userId = req.headers.userId.toString()
 
     const user = await getUserById(userId)
@@ -773,6 +804,109 @@ router.post('/user-edit', rootAuth, async (req, res) => {
       await updateUserStatus(user._id.toString(), Status.Normal)
     }
     res.send({ status: 'Success', message: '更新成功 | Update successful' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user-password', auth, async (req, res) => {
+  try {
+    let { oldPassword, newPassword, confirmPassword } = req.body as { oldPassword: string; newPassword: string; confirmPassword: string }
+    if (!oldPassword || !newPassword || !confirmPassword)
+      throw new Error('密碼不能為空 | Password cannot be empty')
+    if (newPassword !== confirmPassword)
+      throw new Error('兩次密碼不一致 | The two passwords are inconsistent')
+    if (newPassword === oldPassword)
+      throw new Error('新密碼不能與舊密碼相同 | The new password cannot be the same as the old password')
+    if (newPassword.length < 6)
+      throw new Error('密碼長度不能小於6位 | The password length cannot be less than 6 digits')
+
+    const userId = req.headers.userId.toString()
+    oldPassword = md5(oldPassword)
+    newPassword = md5(newPassword)
+    const result = await updateUserPasswordWithVerifyOld(userId, oldPassword, newPassword)
+    if (result.matchedCount <= 0)
+      throw new Error('舊密碼錯誤 | Old password error')
+    if (result.modifiedCount <= 0)
+      throw new Error('更新失敗 | Update error')
+    res.send({ status: 'Success', message: '更新成功 | Update successful' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.get('/user-2fa', auth, async (req, res) => {
+  try {
+    const userId = req.headers.userId.toString()
+    const user = await getUserById(userId)
+
+    const data = new TwoFAConfig()
+    if (user.secretKey) {
+      data.enaled = true
+    }
+    else {
+      const secret = speakeasy.generateSecret({ length: 20, name: `CHATGPT-WEB:${user.email}` })
+      data.otpauthUrl = secret.otpauth_url
+      data.enaled = false
+      data.secretKey = secret.base32
+      data.userName = user.email
+    }
+    res.send({ status: 'Success', message: '獲取成功 | Operation successful', data })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user-2fa', auth, async (req, res) => {
+  try {
+    const { secretKey, token } = req.body as { secretKey: string; token: string }
+    const userId = req.headers.userId.toString()
+
+    const verified = speakeasy.totp.verify({
+      secret: secretKey,
+      encoding: 'base32',
+      token,
+    })
+    if (!verified)
+      throw new Error('驗證失敗 | Verification failed')
+    await updateUser2FA(userId, secretKey)
+    res.send({ status: 'Success', message: '開啟成功 | Enabled 2FA successfully' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user-disable-2fa', auth, async (req, res) => {
+  try {
+    const { token } = req.body as { token: string }
+    const userId = req.headers.userId.toString()
+    const user = await getUserById(userId)
+    if (!user || !user.secretKey)
+      throw new Error('未開啟 2FA | 2FA not enabled')
+    const verified = speakeasy.totp.verify({
+      secret: user.secretKey,
+      encoding: 'base32',
+      token,
+    })
+    if (!verified)
+      throw new Error('驗證失敗 | Verification failed')
+    await disableUser2FA(userId)
+    res.send({ status: 'Success', message: '關閉 2FA 成功 | Disabled 2FA successfully' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user-disable-2fa-admin', rootAuth, async (req, res) => {
+  try {
+    const { userId } = req.body as { userId: string }
+    await disableUser2FA(userId)
+    res.send({ status: 'Success', message: '關閉 2FA 成功 | Disabled 2FA successfully' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })

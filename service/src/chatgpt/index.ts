@@ -7,7 +7,7 @@ import httpsProxyAgent from 'https-proxy-agent'
 import fetch from 'node-fetch'
 import jwt_decode from 'jwt-decode'
 import dayjs from 'dayjs'
-import type { AuditConfig, CHATMODEL, KeyConfig, UserInfo } from '../storage/model'
+import type { AuditConfig, KeyConfig, UserInfo } from '../storage/model'
 import { Status } from '../storage/model'
 import type { TextAuditService } from '../utils/textAudit'
 import { textAuditServices } from '../utils/textAudit'
@@ -34,7 +34,7 @@ const ErrorCodeMessage: Record<string, string> = {
 let auditService: TextAuditService
 const _lockedKeys: { key: string; lockedTime: number }[] = []
 
-export async function initApi(key: KeyConfig, chatModel: CHATMODEL) {
+export async function initApi(key: KeyConfig, chatModel: string) {
   // More Info: https://github.com/transitive-bullshit/chatgpt-api
 
   const config = await getCacheConfig()
@@ -54,7 +54,12 @@ export async function initApi(key: KeyConfig, chatModel: CHATMODEL) {
     // Set the token limits based on the model's type. This is because different models have different token limits.
     // The token limit includes the token count from both the message array sent and the model response.
     // 'gpt-35-turbo' has a limit of 4096 tokens, 'gpt-4' and 'gpt-4-32k' have limits of 8192 and 32768 tokens respectively.
-
+		// Check if the model type is GPT-4-turbo
+		if (model.toLowerCase().includes('1106-preview')) {
+			//If it's a '1106-preview' model, set the maxModelTokens to 131072
+			options.maxModelTokens = 131072
+			options.maxResponseTokens = 32768
+		}
     // Check if the model type includes '16k'
     if (model.toLowerCase().includes('16k')) {
       // If it's a '16k' model, set the maxModelTokens to 16384 and maxResponseTokens to 4096
@@ -400,7 +405,7 @@ async function randomKeyConfig(keys: KeyConfig[]): Promise<KeyConfig | null> {
   return thisKey
 }
 
-async function getRandomApiKey(user: UserInfo, chatModel: CHATMODEL, accountId?: string): Promise<KeyConfig | undefined> {
+async function getRandomApiKey(user: UserInfo, chatModel: string, accountId?: string): Promise<KeyConfig | undefined> {
   let keys = (await getCacheApiKeys()).filter(d => hasAnyRole(d.userRoles, user.roles))
     .filter(d => d.chatModels.includes(chatModel))
   if (accountId)
