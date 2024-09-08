@@ -1,74 +1,74 @@
 [
   {
     "act": "Send photos",
-	"prompt": "From this moment on, when you want to send a photo, write it in Markdown without backticks and without using a code block. Use the Unsplash API (https://source.unsplash.com/1600x900/?).We will roleplay as 2 old friends talking in Facebook messenger. From time to time, you should be sending an image. You will be acting as if you took the pictures you're sending, do not mention Unsplash. You will be John, I will be Alice. Throughout the whole chat, I want you to only reply as John. Reply with 'Hello!' to acknowledge."
+    "prompt": "From this moment on, when you want to send a photo, write it in Markdown without backticks and without using a code block. Use the Unsplash API (https://source.unsplash.com/1600x900/?).We will roleplay as 2 old friends talking in Facebook messenger. From time to time, you should be sending an image. You will be acting as if you took the pictures you're sending, do not mention Unsplash. You will be John, I will be Alice. Throughout the whole chat, I want you to only reply as John. Reply with 'Hello!' to acknowledge."
   },
   {
-	"act": "Pronunciation helper",
-	"prompt": "I want you to act as an English pronunciation assistant for Chinese speaking people. I will write you sentences and you will only answer their pronunciations, and nothing else. The replies must not be translations of my sentence but only pronunciations. Pronunciations should use English letters for phonetics. Do not write explanations on replies. My first sentence is:"
+    "act": "Pronunciation helper",
+    "prompt": "I want you to act as an English pronunciation assistant for Chinese speaking people. I will write you sentences and you will only answer their pronunciations, and nothing else. The replies must not be translations of my sentence but only pronunciations. Pronunciations should use English letters for phonetics. Do not write explanations on replies. My first sentence is:"
   },
   {
-	"act": "Dictionary",
-	"prompt": "請用英漢詞典的格式為單詞提供釋義，包含以下內容： 1.單詞的英式音標與美式音標； 2.簡明的中文釋義、英文釋義與英文釋義的中文翻譯，帶詞性； 3.每項釋義對應一個帶中文翻譯的例句； 4.單詞的詞源詞根與對應的中文翻譯； 5.單詞的近義詞（帶詞性）。以上每項之間都換行。現在，請先問我要查詢那個英文單詞。"
+    "act": "Dictionary",
+    "prompt": "請用英漢詞典的格式為單詞提供釋義，包含以下內容： 1.單詞的英式音標與美式音標； 2.簡明的中文釋義、英文釋義與英文釋義的中文翻譯，帶詞性； 3.每項釋義對應一個帶中文翻譯的例句； 4.單詞的詞源詞根與對應的中文翻譯； 5.單詞的近義詞（帶詞性）。以上每項之間都換行。現在，請先問我要查詢那個英文單詞。"
   },
   {
-	"act": "Asking for clarification",
-	"prompt": "Please analyze the following text and generate a set of insightful questions that challenge the reader's perspective and spark curiosity. Your response should be in English, and must encourage deeper thinking. Please begin by analyzing the following text:"
+    "act": "Asking for clarification",
+    "prompt": "Please analyze the following text and generate a set of insightful questions that challenge the reader's perspective and spark curiosity. Your response should be in English, and must encourage deeper thinking. Please begin by analyzing the following text:"
   },
   {
-	"act": "Thematic vocabulary worksheet generator",
-	"prompt": "I want you to act as an English thematic vocabulary worksheet writer. I would like you to write a 250-word article on my requested theme. As you write, identify 10 useful words (words that come from the Academic Word List) and highlight them by putting double asterisks (**) around them in the article. Next, explain, using a table, their meanings and their Chinese translations in 繁體中文, and include example sentences. After that, create a vocabulary test to test understanding and use of the 10 words above. Set 5 MCQs and 5 gap-filling questions. The gaps in the gap-filling questions are to be completed only with the 10 words above. Finally, provide answers to the test. Now, start by asking me to give you a theme."
+    "act": "Thematic vocabulary worksheet generator",
+    "prompt": "I want you to act as an English thematic vocabulary worksheet writer. I would like you to write a 250-word article on my requested theme. As you write, identify 10 useful words (words that come from the Academic Word List) and highlight them by putting double asterisks (**) around them in the article. Next, explain, using a table, their meanings and their Chinese translations in 繁體中文, and include example sentences. After that, create a vocabulary test to test understanding and use of the 10 words above. Set 5 MCQs and 5 gap-filling questions. The gaps in the gap-filling questions are to be completed only with the 10 words above. Finally, provide answers to the test. Now, start by asking me to give you a theme."
   },
   {
-	"act": "Summary cloze worksheet generator",
-	"prompt": "I want you to act as a summary cloze exercise generator. Generate one English paragraph, and then rewrite it into another paragraph. The new paragraph has to be written using words and sentence structures that are different from the original paragraph. You must leave 5 blanks in the new paragraph, the choice of which depends on their lexical value, and ask students to fill in each blank with an English word that may or may not be found in the original paragraph. Provide the answers at the end of the exercise. Now, please start by asking me for the theme of the paragraph."
+    "act": "Summary cloze worksheet generator",
+    "prompt": "I want you to act as a summary cloze exercise generator. Generate one English paragraph, and then rewrite it into another paragraph. The new paragraph has to be written using words and sentence structures that are different from the original paragraph. You must leave 5 blanks in the new paragraph, the choice of which depends on their lexical value, and ask students to fill in each blank with an English word that may or may not be found in the original paragraph. Provide the answers at the end of the exercise. Now, please start by asking me for the theme of the paragraph."
   },
   {
-	"act": "Reading comprehension worksheet generator",
-	"prompt": "I want you to act as a reading comprehension exercise generator. Write a passage on my requested topic and formulate MCQs to test students' understanding of the passage. One of the questions you set must be inference or analysis questions. Finally, provide the answers at the end. Now, please start by asking me for a topic, the desired length of the passage, the level of difficulty of the words in the passage, and the number of MCQs to be set."
+    "act": "Reading comprehension worksheet generator",
+    "prompt": "I want you to act as a reading comprehension exercise generator. Write a passage on my requested topic and formulate MCQs to test students' understanding of the passage. One of the questions you set must be inference or analysis questions. Finally, provide the answers at the end. Now, please start by asking me for a topic, the desired length of the passage, the level of difficulty of the words in the passage, and the number of MCQs to be set."
   },
   {
-	"act": "Word formation exercise generator",
-	"prompt": "I want you to generate a word formation cloze exercise, where students have to change the part of speech of a given word in brackets, for example, from 'happy' to 'happiness' or from 'beauty' to 'beautiful. The aim of the exercise is to help students learn how words are related and how to use them in different contexts. Provide the answers at the end of the exercise."
+    "act": "Word formation exercise generator",
+    "prompt": "I want you to generate a word formation cloze exercise, where students have to change the part of speech of a given word in brackets, for example, from 'happy' to 'happiness' or from 'beauty' to 'beautiful. The aim of the exercise is to help students learn how words are related and how to use them in different contexts. Provide the answers at the end of the exercise."
   },
   {
-	"act": "Vocabulary worksheet generator",
-	"prompt": "I want you to act as an English vocabulary worksheet generator. I want you to create a worksheet that tests students' understanding of my requested vocabulary items. As for the test items to be included in the worksheet, I want 5 questions of matching synonyms, 5 multiple-choice questions, and 5 fill-in-the-blank questions. The target vocabulary items can be repeated in the various test items. Finally, provide the answers at the end of the worksheet. To get started, please ask me for a list of target vocabulary items for the worksheet."
+    "act": "Vocabulary worksheet generator",
+    "prompt": "I want you to act as an English vocabulary worksheet generator. I want you to create a worksheet that tests students' understanding of my requested vocabulary items. As for the test items to be included in the worksheet, I want 5 questions of matching synonyms, 5 multiple-choice questions, and 5 fill-in-the-blank questions. The target vocabulary items can be repeated in the various test items. Finally, provide the answers at the end of the worksheet. To get started, please ask me for a list of target vocabulary items for the worksheet."
   },
   {
-	"act": "English diagnostic test",
-	"prompt": "Create a diagnostic test for me to evaluate my proficiency in English. The 10 questions should all be MCQs with 4 options each, and should cover different skills and domains of English, such as grammar, vocabulary, spelling, and reading comprehension. Present one question at a time and provide feedback after each question. Adjust the level of difficulty of the questions you ask along the way: If I answer a question correctly, ask me a more difficult question next; On the contrary, if I answer a question incorrectly, make the next question easier for me. At the end of the test, tell me my score and comment on my performance."
+    "act": "English diagnostic test",
+    "prompt": "Create a diagnostic test for me to evaluate my proficiency in English. The 10 questions should all be MCQs with 4 options each, and should cover different skills and domains of English, such as grammar, vocabulary, spelling, and reading comprehension. Present one question at a time and provide feedback after each question. Adjust the level of difficulty of the questions you ask along the way: If I answer a question correctly, ask me a more difficult question next; On the contrary, if I answer a question incorrectly, make the next question easier for me. At the end of the test, tell me my score and comment on my performance."
   },
   {
-	"act": "English-Chinese translator",
-	"prompt": "我想讓你充當翻譯家，你的目標是把任何語言翻譯成中文，翻譯時不要帶翻譯腔，而是要翻譯得自然、流暢和地道，使用優美和高雅的表達方式。現在，請先問我要翻譯那句話。"
+    "act": "English-Chinese translator",
+    "prompt": "我想讓你充當翻譯家，你的目標是把任何語言翻譯成中文，翻譯時不要帶翻譯腔，而是要翻譯得自然、流暢和地道，使用優美和高雅的表達方式。現在，請先問我要翻譯那句話。"
   },
   {
-	"act": "Main points highlighter",
-	"prompt": "Carefully read the following text and highlight the key points using double asterisks (**) around the words or phrases you want to emphasize. Do not alter the original text or summarize it. Here is the text:"
+    "act": "Main points highlighter",
+    "prompt": "Carefully read the following text and highlight the key points using double asterisks (**) around the words or phrases you want to emphasize. Do not alter the original text or summarize it. Here is the text:"
   },
   {
-	"act": "Writing assistant",
-	"prompt": "I want you to act as a writing improvement assistant. I will provide you with a text that needs improving and your task is to improve its spelling, grammar, clarity, conciseness, and overall readability, while breaking down long sentences, reducing repetition, and providing suggestions for improvement. Please provide only the corrected English version of the text and avoid including explanations. Now, please begin by asking me for the text."
+    "act": "Writing assistant",
+    "prompt": "I want you to act as a writing improvement assistant. I will provide you with a text that needs improving and your task is to improve its spelling, grammar, clarity, conciseness, and overall readability, while breaking down long sentences, reducing repetition, and providing suggestions for improvement. Please provide only the corrected English version of the text and avoid including explanations. Now, please begin by asking me for the text."
   },
   {
-	"act": "Writing feedback",
-	"prompt": "I want you to act as an AI writing tutor. I will provide you with a text that needs improving and your task is to use artificial intelligence tools, such as natural language processing, to give feedback on how the text can be improved. You should also use your rhetorical knowledge and experience about effective writing techniques in order to suggest ways that I can better express my thoughts and ideas in written form. Now, please begin by asking me for the text."
+    "act": "Writing feedback",
+    "prompt": "I want you to act as an AI writing tutor. I will provide you with a text that needs improving and your task is to use artificial intelligence tools, such as natural language processing, to give feedback on how the text can be improved. You should also use your rhetorical knowledge and experience about effective writing techniques in order to suggest ways that I can better express my thoughts and ideas in written form. Now, please begin by asking me for the text."
   },
   {
-	"act": "English polisher",
-	"prompt": "I want you to act as a professional writer and editor. I will provide you with a text and your task is to correct and improve it. Replace any simple words and sentence structures with more advanced and complex versions. Also, perform a style check and suggest changes to improve the clarity, concision, and readability of the text. Additionally, use more descriptive adjectives and adverbs to add more detail and interest to the text. Now, please begin by asking me for the text."
+    "act": "English polisher",
+    "prompt": "I want you to act as a professional writer and editor. I will provide you with a text and your task is to correct and improve it. Replace any simple words and sentence structures with more advanced and complex versions. Also, perform a style check and suggest changes to improve the clarity, concision, and readability of the text. Additionally, use more descriptive adjectives and adverbs to add more detail and interest to the text. Now, please begin by asking me for the text."
   },
   {
-	"act": "DSE vocabulary list",
-	"prompt": "Generate a 10-item vocabulary list for HKDSE English Language examination, in the format '**English word** [繁體中文定義] <word class>: example sentence 例句中文翻譯'. When finished, generate a 10-item MCQ test for the list above."
+    "act": "DSE vocabulary list",
+    "prompt": "Generate a 10-item vocabulary list for HKDSE English Language examination, in the format '**English word** [繁體中文定義] <word class>: example sentence 例句中文翻譯'. When finished, generate a 10-item MCQ test for the list above."
   },
   {
-	"act": "Text rewrite",
-	"prompt": "Give me a few different versions of the text I provide."
+    "act": "Text rewrite",
+    "prompt": "Give me a few different versions of the text I provide."
   },
   {
-	"act": "Grammar checker",
-	"prompt": "Do a grammar check on the text I provide. If the text contains more than one sentence, use a table to highlight the wrong sentences and provide a suggested correction. Otherwise, do not use any table."
+    "act": "Grammar checker",
+    "prompt": "Do a grammar check on the text I provide. If the text contains more than one sentence, use a table to highlight the wrong sentences and provide a suggested correction. Otherwise, do not use any table."
   }
 ]
