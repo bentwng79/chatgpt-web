@@ -53,6 +53,7 @@ export class UserInfo {
   secretKey?: string // 2fa
   advanced?: AdvancedConfig
   useAmount?: number // chat usage amount
+  limit_switch?: boolean // chat amount limit switch
   constructor(email: string, password: string) {
     this.name = email
     this.email = email
@@ -64,6 +65,7 @@ export class UserInfo {
     this.roles = [UserRole.User]
     this.remark = null
     this.useAmount = null
+    this.limit_switch = true
   }
 }
 
@@ -116,17 +118,21 @@ export class previousResponse {
 export class ChatInfo {
   _id: ObjectId
   roomId: number
+  model: string
   uuid: number
   dateTime: number
   prompt: string
+  images?: string[]
   response?: string
   status: Status = Status.Normal
   options: ChatOptions
   previousResponse?: previousResponse[]
-  constructor(roomId: number, uuid: number, prompt: string, options: ChatOptions) {
+  constructor(roomId: number, uuid: number, prompt: string, images: string[], model: string, options: ChatOptions) {
     this.roomId = roomId
+    this.model = model
     this.uuid = uuid
     this.prompt = prompt
+    this.images = images
     this.options = options
     this.dateTime = new Date().getTime()
   }
@@ -145,16 +151,18 @@ export class ChatUsage {
   roomId: number
   chatId: ObjectId
   messageId: string
+  model: string
   promptTokens: number
   completionTokens: number
   totalTokens: number
   estimated: boolean
   dateTime: number
-  constructor(userId: ObjectId, roomId: number, chatId: ObjectId, messageId: string, usage: UsageResponse) {
+  constructor(userId: ObjectId, roomId: number, chatId: ObjectId, messageId: string, model: string, usage?: UsageResponse) {
     this.userId = userId
     this.roomId = roomId
     this.chatId = chatId
     this.messageId = messageId
+    this.model = model
     if (usage) {
       this.promptTokens = usage.prompt_tokens
       this.completionTokens = usage.completion_tokens
@@ -182,6 +190,7 @@ export class Config {
     public mailConfig?: MailConfig,
     public auditConfig?: AuditConfig,
     public advancedConfig?: AdvancedConfig,
+    public announceConfig?: AnnounceConfig,
   ) { }
 }
 
@@ -189,12 +198,23 @@ export class SiteConfig {
   constructor(
     public siteTitle?: string,
     public loginEnabled?: boolean,
+    public authProxyEnabled?: boolean,
     public loginSalt?: string,
     public registerEnabled?: boolean,
     public registerReview?: boolean,
     public registerMails?: string,
     public siteDomain?: string,
     public chatModels?: string,
+    public globalAmount?: number,
+    public usageCountLimit?: boolean,
+    public showWatermark?: boolean,
+  ) { }
+}
+
+export class AnnounceConfig {
+  constructor(
+    public enabled: boolean,
+    public announceWords: string,
   ) { }
 }
 
@@ -205,6 +225,7 @@ export class MailConfig {
     public smtpTsl: boolean,
     public smtpUserName: string,
     public smtpPassword: string,
+    public smtpFrom?: string,
   ) { }
 }
 
@@ -251,6 +272,18 @@ export class KeyConfig {
     this.userRoles = userRoles
     this.status = Status.Normal
     this.remark = remark
+  }
+}
+
+export class UserPrompt {
+  _id: ObjectId
+  userId: string
+  title: string
+  value: string
+  constructor(userId: string, title: string, value: string) {
+    this.userId = userId
+    this.title = title
+    this.value = value
   }
 }
 

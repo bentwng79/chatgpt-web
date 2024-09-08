@@ -3,8 +3,8 @@ import type { Ref } from 'vue'
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import type { MessageReactive } from 'naive-ui'
-import { NAutoComplete, NButton, NInput, NSelect, NSlider, NSpace, NSpin, useDialog, useMessage } from 'naive-ui'
+import type { MessageReactive, UploadFileInfo } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, NSelect, NSlider, NSpace, NSpin, NUpload, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -21,6 +21,7 @@ import {
 import { t } from '@/locales'
 import { debounce } from '@/utils/functions/debounce'
 import IconPrompt from '@/icons/Prompt.vue'
+
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
 
 let controller = new AbortController()
@@ -54,6 +55,10 @@ const showPrompt = ref(false)
 const nowSelectChatModel = ref<string | null>(null)
 const currentChatModel = computed(() => nowSelectChatModel.value ?? currentChatHistory.value?.chatModel ?? userStore.userInfo.config.chatModel)
 
+const currentNavIndexRef = ref<number>(-1)
+
+const isVisionModel = computed(() => currentChatModel.value && (currentChatModel.value?.includes('vision') || ['gpt-4-turbo', 'gpt-4-turbo-2024-04-09'].includes(currentChatModel.value) || currentChatModel.value?.includes('gpt-4o')))
+
 let loadingms: MessageReactive
 let allmsg: MessageReactive
 let prevScrollTop: number
@@ -74,6 +79,8 @@ function handleSubmit() {
   onConversation()
 }
 
+const uploadFileKeysRef = ref<string[]>([])
+
 async function onConversation() {
   let message = prompt.value
 
@@ -86,6 +93,9 @@ async function onConversation() {
   if (nowSelectChatModel.value && currentChatHistory.value)
     currentChatHistory.value.chatModel = nowSelectChatModel.value
 
+  const uploadFileKeys = isVisionModel.value ? uploadFileKeysRef.value : []
+  uploadFileKeysRef.value = []
+
   controller = new AbortController()
 
   const chatUuid = Date.now()
@@ -95,6 +105,7 @@ async function onConversation() {
       uuid: chatUuid,
       dateTime: new Date().toLocaleString(),
       text: message,
+      images: uploadFileKeys,
       inversion: true,
       error: false,
       conversationOptions: null,
@@ -134,6 +145,7 @@ async function onConversation() {
         roomId: +uuid,
         uuid: chatUuid,
         prompt: message,
+        uploadFileKeys,
         options,
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
@@ -429,19 +441,28 @@ function handleExport() {
   })
 }
 
-function handleDelete(index: number) {
+function handleDelete(index: number, fast: boolean) {
   if (loading.value)
     return
 
-  dialog.warning({
-    title: t('chat.deleteMessage'),
-    content: t('chat.deleteMessageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: () => {
-      chatStore.deleteChatByUuid(+uuid, index)
-    },
-  })
+  if (fast === true) {
+    chatStore.deleteChatByUuid(+uuid, index)
+  }
+  else {
+    dialog.warning({
+      title: t('chat.deleteMessage'),
+      content: t('chat.deleteMessageConfirm'),
+      positiveText: t('common.yes'),
+      negativeText: t('common.no'),
+      onPositiveClick: () => {
+        chatStore.deleteChatByUuid(+uuid, index)
+      },
+    })
+  }
+}
+
+function updateCurrentNavIndex(index: number, newIndex: number) {
+  currentNavIndexRef.value = newIndex
 }
 
 function handleClear() {
@@ -545,7 +566,7 @@ async function handleToggleUsingContext() {
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
 const searchOptions = computed(() => {
   if (prompt.value.startsWith('/')) {
-    return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
+    return promptTemplate.value.filter((item: { title: string }) => item.title.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
       return {
         label: obj.value,
         value: obj.value,
@@ -558,10 +579,10 @@ const searchOptions = computed(() => {
 })
 
 // value反渲染key
-const renderOption = (option: { label: string }) => {
+function renderOption(option: { label: string }) {
   for (const i of promptTemplate.value) {
     if (i.value === option.label)
-      return [i.key]
+      return [i.title]
   }
   return []
 }
@@ -592,6 +613,25 @@ function formatTooltip(value: number) {
   return `${t('setting.maxContextCount')}: ${value}`
 }
 
+// https://github.com/tusen-ai/naive-ui/issues/4887
+function handleFinish(options: { file: UploadFileInfo; event?: ProgressEvent }) {
+  if (options.file.status === 'finished') {
+    const response = (options.event?.target as XMLHttpRequest).response
+    uploadFileKeysRef.value.push(`${response.data.fileKey}`)
+  }
+}
+
+function handleDeleteUploadFile() {
+  uploadFileKeysRef.value.pop()
+}
+
+const uploadHeaders = computed(() => {
+  const token = useAuthStore().token
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+})
+
 onMounted(() => {
   firstLoading.value = true
   handleSyncChat()
@@ -603,7 +643,7 @@ onMounted(() => {
   }
 })
 
-watch(() => chatStore.active, (newVal, oldVal) => {
+watch(() => chatStore.active, () => {
   handleSyncChat()
 })
 
@@ -641,15 +681,19 @@ onUnmounted(() => {
                 <Message
                   v-for="(item, index) of dataSources"
                   :key="index"
+                  :index="index"
+                  :current-nav-index="currentNavIndexRef"
                   :date-time="item.dateTime"
                   :text="item.text"
+                  :images="item.images"
                   :inversion="item.inversion"
                   :response-count="item.responseCount"
                   :usage="item && item.usage || undefined"
                   :error="item.error"
                   :loading="item.loading"
                   @regenerate="onRegenerate(index)"
-                  @delete="handleDelete(index)"
+                  @update-current-nav-index="(itemId: number) => updateCurrentNavIndex(index, itemId)"
+                  @delete="(fast) => handleDelete(index, fast)"
                   @response-history="(ev) => onResponseHistory(index, ev)"
                 />
                 <div class="sticky bottom-0 left-0 flex justify-center">
@@ -669,7 +713,36 @@ onUnmounted(() => {
     <footer :class="footerClass">
       <div class="w-full max-w-screen-xl m-auto">
         <NSpace vertical>
+          <div v-if="isVisionModel && uploadFileKeysRef.length > 0" class="flex items-center space-x-2 h-10">
+            <NSpace>
+              <img v-for="(v, i) of uploadFileKeysRef" :key="i" :src="`/uploads/${v}`" class="max-h-10">
+              <HoverButton @click="handleDeleteUploadFile">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:delete-back-2-fill" />
+                </span>
+              </HoverButton>
+            </NSpace>
+          </div>
+
           <div class="flex items-center space-x-2">
+            <div>
+              <NUpload
+                :disabled="!isVisionModel"
+                action="/api/upload-image"
+                list-type="image"
+                class="flex items-center justify-center h-10 transition hover:bg-neutral-100 dark:hover:bg-[#414755]"
+                style="flex-flow:row nowrap;min-width:2.5em;padding:.5em;border-radius:.5em;"
+                :headers="uploadHeaders"
+                :show-file-list="false"
+                response-type="json"
+                accept="image/png, image/jpeg, image/webp, image/gif"
+                @finish="handleFinish"
+              >
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:image-edit-line" />
+                </span>
+              </NUpload>
+            </div>
             <HoverButton @click="handleClear">
               <span class="text-xl text-[#4f555e] dark:text-white">
                 <SvgIcon icon="ri:delete-bin-line" />
@@ -695,7 +768,7 @@ onUnmounted(() => {
               style="width: 250px"
               :value="currentChatModel"
               :options="authStore.session?.chatModels"
-              :disabled="!!authStore.session?.auth && !authStore.token"
+              :disabled="!!authStore.session?.auth && !authStore.token && !authStore.session?.authProxyEnabled"
               @update-value="(val) => handleSyncChatModel(val)"
             />
             <NSlider v-model:value="userStore.userInfo.advanced.maxContextCount" :max="100" :min="0" :step="1" style="width: 88px" :format-tooltip="formatTooltip" @update:value="() => { userStore.updateSetting(false) }" />
@@ -706,7 +779,7 @@ onUnmounted(() => {
                 <NInput
                   ref="inputRef"
                   v-model:value="prompt"
-                  :disabled="!!authStore.session?.auth && !authStore.token"
+                  :disabled="!!authStore.session?.auth && !authStore.token && !authStore.session?.authProxyEnabled"
                   type="textarea"
                   :placeholder="placeholder"
                   :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"

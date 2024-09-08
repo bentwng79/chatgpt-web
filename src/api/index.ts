@@ -1,8 +1,14 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
 import { get, post } from '@/utils/request'
-import type { AuditConfig, ConfigState, KeyConfig, MailConfig, SiteConfig, Status, UserInfo, UserPassword } from '@/components/common/Setting/model'
+import type { AnnounceConfig, AuditConfig, ConfigState, GiftCard, KeyConfig, MailConfig, SiteConfig, Status, UserInfo, UserPassword, UserPrompt } from '@/components/common/Setting/model'
 import { useAuthStore, useUserStore } from '@/store'
 import type { SettingsState } from '@/store/modules/user/helper'
+
+export function fetchAnnouncement<T = any>() {
+  return post<T>({
+    url: '/announcement',
+  })
+}
 
 export function fetchChatConfig<T = any>() {
   return post<T>({
@@ -16,6 +22,7 @@ export function fetchChatAPIProcess<T = any>(
     uuid: number
     regenerate?: boolean
     prompt: string
+    uploadFileKeys?: string[]
     options?: { conversationId?: string; parentMessageId?: string }
     signal?: GenericAbortSignal
     onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
@@ -28,6 +35,7 @@ export function fetchChatAPIProcess<T = any>(
     uuid: params.uuid,
     regenerate: params.regenerate || false,
     prompt: params.prompt,
+    uploadFileKeys: params.uploadFileKeys,
     options: params.options,
   }
 
@@ -89,6 +97,13 @@ export function fetchLogin<T = any>(username: string, password: string, token?: 
   })
 }
 
+export function fetchLogout<T = any>() {
+  return post<T>({
+    url: '/user-logout',
+    data: { },
+  })
+}
+
 export function fetchSendResetMail<T = any>(username: string) {
   return post<T>({
     url: '/user-send-reset-mail',
@@ -135,6 +150,13 @@ export function decode_redeemcard<T = any>(redeemCardNo: string) {
   return post<T>({
     url: '/redeem-card',
     data: { redeemCardNo },
+  })
+}
+
+export function fetchUpdateGiftCards<T = any>(data: GiftCard[], overRideSwitch: boolean) {
+  return post<T>({
+    url: '/giftcard-update',
+    data: { data, overRideSwitch },
   })
 }
 
@@ -186,11 +208,11 @@ export function fetchUpdateUserStatus<T = any>(userId: string, status: Status) {
   })
 }
 
-// 增加useAmount信息
+// 增加useAmount信息 limit_switch
 export function fetchUpdateUser<T = any>(userInfo: UserInfo) {
   return post<T>({
     url: '/user-edit',
-    data: { userId: userInfo._id, roles: userInfo.roles, email: userInfo.email, password: userInfo.password, remark: userInfo.remark, useAmount: userInfo.useAmount },
+    data: { userId: userInfo._id, roles: userInfo.roles, email: userInfo.email, password: userInfo.password, remark: userInfo.remark, useAmount: userInfo.useAmount, limit_switch: userInfo.limit_switch },
   })
 }
 
@@ -204,6 +226,13 @@ export function fetchUpdateUserPassword<T = any>(pwd: UserPassword) {
 export function fetchGetChatRooms<T = any>() {
   return get<T>({
     url: '/chatrooms',
+  })
+}
+
+export function fetchGetChatRoomsCount<T = any>(page: number, size: number, userId: string) {
+  return get<T>({
+    url: '/chatrooms-count',
+    data: { page, size, userId },
   })
 }
 
@@ -249,9 +278,9 @@ export function fetchDeleteChatRoom<T = any>(roomId: number) {
   })
 }
 
-export function fetchGetChatHistory<T = any>(roomId: number, lastId?: number) {
+export function fetchGetChatHistory<T = any>(roomId: number, lastId?: number, all?: string) {
   return get<T>({
-    url: `/chat-history?roomId=${roomId}&lastId=${lastId}`,
+    url: `/chat-history?roomId=${roomId}&lastId=${lastId}&all=${all}`,
   })
 }
 
@@ -301,6 +330,13 @@ export function fetchTestAudit<T = any>(text: string, audit: AuditConfig) {
   return post<T>({
     url: '/audit-test',
     data: { audit, text },
+  })
+}
+
+export function fetchUpdateAnnounce<T = any>(announce: AnnounceConfig) {
+  return post<T>({
+    url: '/setting-announce',
+    data: announce,
   })
 }
 
@@ -356,5 +392,38 @@ export function fetchUpsertApiKey<T = any>(keyConfig: KeyConfig) {
   return post<T>({
     url: '/setting-key-upsert',
     data: keyConfig,
+  })
+}
+
+export function fetchUserPromptList<T = any>() {
+  return get<T>({
+    url: '/prompt-list',
+  })
+}
+
+export function fetchUpsertUserPrompt<T = any>(userPrompt: UserPrompt) {
+  return post<T>({
+    url: '/prompt-upsert',
+    data: userPrompt,
+  })
+}
+
+export function fetchDeleteUserPrompt<T = any>(id: string) {
+  return post<T>({
+    url: '/prompt-delete',
+    data: { id },
+  })
+}
+
+export function fetchClearUserPrompt<T = any>() {
+  return post<T>({
+    url: '/prompt-clear',
+  })
+}
+
+export function fetchImportUserPrompt<T = any>(dataProps: never[]) {
+  return post<T>({
+    url: '/prompt-import',
+    data: dataProps,
   })
 }

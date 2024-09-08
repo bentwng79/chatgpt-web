@@ -8,13 +8,16 @@ import About from './About.vue'
 import Site from './Site.vue'
 import Mail from './Mail.vue'
 import Audit from './Audit.vue'
+import Gift from './Gift.vue'
 import User from './User.vue'
 import Key from './Keys.vue'
 import Password from './Password.vue'
 import TwoFA from './TwoFA.vue'
+import Announcement from './Anonuncement.vue'
 import { SvgIcon } from '@/components/common'
 import { useAuthStore, useUserStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
+import ChatRecord from '@/components/common/Setting/ChatRecord.vue'
 
 const props = defineProps<Props>()
 
@@ -98,12 +101,33 @@ const show = computed({
           </template>
           <About />
         </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="ChatRecord" tab="ChatRecord">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ic:outline-chat" />
+            <span class="ml-2">{{ $t('setting.chatRecord') }}</span>
+          </template>
+          <ChatRecord />
+        </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="KeysConfig" tab="KeysConfig">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri-key-2-line" />
+            <span class="ml-2">{{ $t('setting.keysConfig') }}</span>
+          </template>
+          <Key />
+        </NTabPane>
         <NTabPane v-if="userStore.userInfo.root" name="SiteConfig" tab="SiteConfig">
           <template #tab>
             <SvgIcon class="text-lg" icon="ri:settings-line" />
             <span class="ml-2">{{ $t('setting.siteConfig') }}</span>
           </template>
           <Site />
+        </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="AnnounceConfig" tab="AnnounceConfig">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri:settings-line" />
+            <span class="ml-2">{{ $t('setting.announceConfig') }}</span>
+          </template>
+          <Announcement />
         </NTabPane>
         <NTabPane v-if="userStore.userInfo.root" name="MailConfig" tab="MailConfig">
           <template #tab>
@@ -126,12 +150,12 @@ const show = computed({
           </template>
           <User />
         </NTabPane>
-        <NTabPane v-if="userStore.userInfo.root" name="KeysConfig" tab="KeysConfig">
+        <NTabPane v-if="userStore.userInfo.root" name="GiftCardConfig" tab="GiftCardConfig">
           <template #tab>
-            <SvgIcon class="text-lg" icon="ri-key-2-line" />
-            <span class="ml-2">{{ $t('setting.keysConfig') }}</span>
+            <SvgIcon class="text-lg" icon="mdi-gift" />
+            <span class="ml-2">{{ $t('setting.uploadgifts') }}</span>
           </template>
-          <Key />
+          <Gift />
         </NTabPane>
       </NTabs>
     </div>
