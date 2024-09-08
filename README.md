@@ -9,7 +9,7 @@
 ## 说明
 > **此项目 Fork 自 [Chanzhaoyu/chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web), 新增了部分特色功能:**
 
-[✓] 注册&登录&重置密码
+[✓] 注册 & 登录 & 重置密码 & 2FA
 
 [✓] 同步历史会话
 
@@ -22,6 +22,8 @@
 [✓] 用户管理
 
 [✓] 多 Key 随机
+
+[✓] 对话数量限制 & 设置不同用户对话数量 & 兑换数量
 </br>
 
 ## 截图
@@ -34,6 +36,9 @@
 ![cover3](./docs/prompt.jpg)
 ![cover3](./docs/user-manager.jpg)
 ![cover3](./docs/key-manager.jpg)
+![userlimit](./docs/add_redeem_and_limit.png)
+![setmanuallimit](./docs/manual_set_limit.png)
+![giftcarddb](./docs/giftcard_db_design.png)
 
 - [ChatGPT Web](#chatgpt-web)
 	- [介绍](#介绍)

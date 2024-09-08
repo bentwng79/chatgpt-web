@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { h, onMounted, reactive, ref } from 'vue'
-import { NButton, NDataTable, NInput, NModal, NSelect, NSpace, NTag, useDialog, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NInput, NInputNumber, NModal, NSelect, NSpace, NTag, useDialog, useMessage } from 'naive-ui'
 import { Status, UserInfo, UserRole, userRoleOptions } from './model'
-import { fetchGetUsers, fetchUpdateUser, fetchUpdateUserStatus } from '@/api'
+import { fetchDisableUser2FAByAdmin, fetchGetUsers, fetchUpdateUser, fetchUpdateUserStatus } from '@/api'
 import { t } from '@/locales'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 
@@ -27,12 +27,12 @@ const columns = [
   {
     title: '註冊時間',
     key: 'createTime',
-    width: 220,
+    width: 200,
   },
   {
     title: '驗證時間',
     key: 'verifyTime',
-    width: 220,
+    width: 200,
   },
   {
     title: '角色',
@@ -60,7 +60,7 @@ const columns = [
   {
     title: '狀態',
     key: 'status',
-    width: 200,
+    width: 80,
     render(row: any) {
       return Status[row.status]
     },
@@ -69,6 +69,12 @@ const columns = [
     title: '備註',
     key: 'remark',
     width: 220,
+  },
+  // 新增额度信息
+  {
+    title: 'Amts',
+    key: 'useAmount',
+    width: 80,
   },
   {
     title: '操作',
@@ -111,6 +117,17 @@ const columns = [
             onClick: () => handleUpdateUserStatus(row._id, Status.Normal),
           },
           { default: () => t('chat.verifiedUser') },
+        ))
+      }
+      if (row.secretKey) {
+        actions.push(h(
+          NButton,
+          {
+            size: 'small',
+            type: 'warning',
+            onClick: () => handleDisable2FA(row._id),
+          },
+          { default: () => t('chat.disable2FA') },
         ))
       }
       return actions
@@ -173,6 +190,20 @@ async function handleUpdateUserStatus(userId: string, status: Status) {
     ms.info('OK')
     await handleGetUsers(pagination.page)
   }
+}
+
+async function handleDisable2FA(userId: string) {
+  dialog.warning({
+    title: t('chat.disable2FA'),
+    content: t('chat.disable2FAConfirm'),
+    positiveText: t('common.yes'),
+    negativeText: t('common.no'),
+    onPositiveClick: async () => {
+      const result = await fetchDisableUser2FAByAdmin(userId)
+      ms.success(result.message as string)
+      await handleGetUsers(pagination.page)
+    },
+  })
 }
 
 function handleNewUser() {
@@ -269,6 +300,15 @@ onMounted(async () => {
           <div class="flex-1">
             <NInput
               v-model:value="userRef.remark" type="textarea"
+              :autosize="{ minRows: 1, maxRows: 2 }" placeholder=""
+            />
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="flex-shrink-0 w-[100px]">{{ $t('setting.useAmount') }}</span>
+          <div class="flex-1">
+            <NInputNumber
+              v-model:value="userRef.useAmount"
               :autosize="{ minRows: 1, maxRows: 2 }" placeholder=""
             />
           </div>

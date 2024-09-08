@@ -1,6 +1,12 @@
 # build front-end
 FROM node:lts-alpine AS frontend
 
+ARG GIT_COMMIT_HASH=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ARG RELEASE_VERSION=v0.0.0
+
+ENV VITE_GIT_COMMIT_HASH $GIT_COMMIT_HASH
+ENV VITE_RELEASE_VERSION $RELEASE_VERSION
+
 RUN npm install pnpm -g
 
 WORKDIR /app
@@ -55,8 +61,8 @@ COPY --from=frontend /app/dist /app/public
 
 COPY --from=backend /app/build /app/build
 
-COPY --from=backend /app/src/utils/templates /app/build/templates
+COPY --from=backend /app/src/utils/templates /app/build/utils/templates
 
 EXPOSE 3002
 
-CMD ["sh", "-c", "./replace-title.sh && pnpm run prod"]
+CMD ["sh", "-c", "./replace-title.sh && node --import tsx/esm ./build/index.js"]

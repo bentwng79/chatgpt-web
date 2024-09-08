@@ -6,7 +6,7 @@ import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useAuthStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PromptStore } from '@/components/common'
+import { GithubSite, PromptStore } from '@/components/common'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -18,7 +18,7 @@ const show = ref(false)
 const collapsed = computed(() => appStore.siderCollapsed)
 
 async function handleAdd() {
-  await chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false, usingContext: true })
+  await chatStore.addNewHistory()
   if (isMobile.value)
     appStore.setSiderCollapsed(true)
 }
@@ -87,6 +87,7 @@ watch(
         </div>
       </main>
       <Footer />
+      <GithubSite class="flex-col-2 text-center m-0" />
     </div>
   </NLayoutSider>
   <template v-if="isMobile">
